@@ -64,8 +64,8 @@ target writes, or full autonomy.
 
 ## Quickstart
 
-> Phases 0–1 are implemented: the application shell, health contract, full database schema,
-> migration guards and synthetic seed are available. Business workflows and deployment readiness
+> Phases 0–2 are implemented: the application shell, health contract, full database schema,
+> migration guards, synthetic seed, five read-only sources and an idempotent target API are available. Business workflows and deployment readiness
 > arrive in later phases and must be implemented in `docs/prompts/` order.
 
 ```bash

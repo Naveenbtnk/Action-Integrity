@@ -51,9 +51,9 @@ rejected by the database; an `ADMIN`+`SENIOR_REVIEWER` user insert is rejected.
 **Build:** `SourceAdapter`/`TargetAdapter`; `/api/v1/sources/*` and `/api/v1/target/*` with
 `x-target-key`; `lib/target/service.ts` as the only `tgt_*` writer; before-state into `tgt_audit`;
 idempotent writes; `getEntitlement`, `getServiceStatus`, `applyChange`, `restoreFromSnapshot`;
-adapter timeouts, a `slow` and a `lost-response` mode behind env flags for failure tests.
+adapter timeouts, a `slow` and an `after-commit` mode behind non-production test hooks for failure tests.
 **Done:** a curl script reads each source, applies a change, re-reads it, and replays the same
-idempotency key without a second write; `lost-response` returns the error while the row is committed;
+idempotency key without a second write; `after-commit` returns `UNKNOWN` while the row is committed;
 no module outside `lib/target/service.ts` can write `tgt_*`.
 **Verify:** `npm run test:integration -- adapters target`.
 **If skipped:** the verifier has nothing real to verify and the demo simulates a simulation.

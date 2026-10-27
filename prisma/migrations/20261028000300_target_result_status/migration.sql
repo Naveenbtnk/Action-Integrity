@@ -1,0 +1,2 @@
+ALTER TABLE "tgt_audit" ADD COLUMN "result_status" TEXT NOT NULL DEFAULT 'SUCCEEDED';
+ALTER TABLE "tgt_audit" ALTER COLUMN "result_status" DROP DEFAULT;

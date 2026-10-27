@@ -391,6 +391,8 @@ model TgtAudit {
   afterState     Json     @map("after_state") @db.JsonB
   idempotencyKey String   @unique @map("idempotency_key")
   requestHash    String   @map("request_hash")
+  requestId      String   @map("request_id")
+  resultStatus   String   @map("result_status")
 
   @@map("tgt_audit")
 }
