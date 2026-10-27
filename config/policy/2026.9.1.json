@@ -1,0 +1,10 @@
+{
+  "version": "2026.9.1",
+  "status": "retired",
+  "thresholds": {
+    "highRiskScore": 80,
+    "highExposureCount": 1000,
+    "approvalWindowHours": 12
+  },
+  "note": "Synthetic historical policy for the Phase 1 seed."
+}

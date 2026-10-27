@@ -1,0 +1,10 @@
+{
+  "version": "2026.10.1",
+  "status": "placeholder",
+  "thresholds": {
+    "highRiskScore": 80,
+    "highExposureCount": 1000,
+    "approvalWindowHours": 12
+  },
+  "note": "Phase 0 placeholder. Phase 5 validates and activates policy semantics."
+}

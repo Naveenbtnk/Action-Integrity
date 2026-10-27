@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: action_integrity_test
+          POSTGRES_USER: action_integrity
+          POSTGRES_PASSWORD: action_integrity
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U action_integrity -d action_integrity_test"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://action_integrity:action_integrity@localhost:5432/action_integrity_test
+      DIRECT_DATABASE_URL: postgresql://action_integrity:action_integrity@localhost:5432/action_integrity_test
+      AUTH_SECRET: ci-only-secret-with-more-than-32-characters
+      AUTH_URL: http://localhost:3000
+      AUTH_CREDENTIALS_ENABLED: 'false'
+      OIDC_ISSUER: https://id.ci.example
+      OIDC_CLIENT_ID: ci-client
+      OIDC_CLIENT_SECRET: ci-client-secret
+      GEMINI_API_KEY: ci-placeholder
+      GEMINI_MODEL: gemini-2.5-flash
+      AGENT_SERVICE_KEY: ci-agent-key-with-more-than-32-characters
+      TARGET_SERVICE_KEY: ci-target-key-with-more-than-32-characters
+      OPS_SERVICE_KEY: ci-ops-key-with-more-than-32-characters
+      REDIS_URL: redis://localhost:6379
+      AIC_BASE_URL: http://localhost:3000
+      INVESTIGATION_MODE: deterministic
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:4318
+      OTEL_SDK_DISABLED: '0'
+      LOG_PRETTY: 'false'
+      ALLOW_DB_RESET: 'false'
+      ALLOW_DEMO_RESET: 'false'
+      ANCHOR_STORE_ENDPOINT: https://objects.ci.example
+      ANCHOR_STORE_BUCKET: ci-anchors
+      ANCHOR_STORE_ACCESS_KEY: ci-access
+      ANCHOR_STORE_SECRET_KEY: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test:unit
+      - run: npx prisma migrate deploy
+      - run: npm run seed
+      - run: npm run seed
+      - run: npm run test:db -- immutability policy user-roles approval
+      - run: npm run build

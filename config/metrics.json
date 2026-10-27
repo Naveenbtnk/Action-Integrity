@@ -1,0 +1,18 @@
+{
+  "version": "2026.10.1",
+  "customerImpactMinutesPerExposure": {
+    "value": 45,
+    "label": "Minutes of customer impact per exposed account"
+  },
+  "supportHoursPerCase": { "value": 3.5, "label": "Support hours per handled case" },
+  "auditHoursPerVerifiedClosure": {
+    "value": 1.0,
+    "label": "Audit hours per verified closure"
+  },
+  "tolerances": {
+    "preventionPrecisionMin": 0.9,
+    "fallbackRateMax": 0.02,
+    "p95GateLatencyMsMax": 400,
+    "verifiedClosureRateMin": 0.9
+  }
+}

@@ -1,0 +1,985 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  VIEWER
+  ANALYST
+  REVIEWER
+  SENIOR_REVIEWER
+  ADMIN
+  AUDITOR
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum IntegrityEventType {
+  SCHEMA
+  ENUM
+  SEMANTIC
+  FRESHNESS
+  CROSS_SOURCE
+}
+
+enum IntegrityEventStatus {
+  OPEN
+  DISMISSED
+  LINKED
+}
+
+enum OutboundActionType {
+  ENTITLEMENT_REVOKE
+  ENTITLEMENT_GRANT
+  ACCOUNT_STATUS_CHANGE
+}
+
+enum OutboundActionStatus {
+  PENDING
+  HELD
+  RELEASED
+  EXECUTED
+  BLOCKED
+  COMPENSATED
+}
+
+enum GateDecision {
+  ALLOW
+  HOLD
+  BLOCK
+}
+
+enum CaseStatus {
+  NEW
+  TRIAGED
+  HOLDING
+  INVESTIGATING
+  AWAITING_EVIDENCE
+  AWAITING_APPROVAL
+  APPROVED
+  REJECTED
+  SAFE_REFUSAL
+  EXECUTING
+  VERIFYING
+  CLOSED_RESOLVED
+  CLOSED_NO_ACTION
+  CLOSED_ESCALATED
+  REOPENED
+  ESCALATED
+}
+
+enum CaseMode {
+  AGENT
+  DETERMINISTIC
+}
+
+enum Disposition {
+  ALLOW
+  HOLD_FOR_EVIDENCE
+  BLOCK
+  RELEASE_AFTER_CORRECTION
+  COMPENSATE
+  ESCALATE
+  SAFE_REFUSAL
+}
+
+enum ApprovalDecision {
+  APPROVE
+  REJECT
+  OVERRIDE
+}
+
+enum ApprovalStatus {
+  VALID
+  SUPERSEDED
+  EXPIRED
+  REVOKED
+}
+
+enum ExecutionKind {
+  RELEASE
+  RESTORE_LAST_KNOWN_GOOD
+}
+
+enum ExecutionStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  UNKNOWN
+}
+
+enum EvidenceKind {
+  CONTRACT_RECORD
+  BILLING_RECORD
+  USAGE_SIGNAL
+  SUPPORT_TICKET
+  ACCOUNT_HISTORY
+  TARGET_STATE
+  OWNER_CONFIRMATION
+}
+
+enum EvidenceStance {
+  SUPPORTS
+  CONTRADICTS
+  NEUTRAL
+}
+
+enum EvidenceRequestStatus {
+  REQUESTED
+  RECEIVED
+  EXPIRED
+}
+
+enum HypothesisVerdict {
+  SUPPORTED
+  REFUTED
+  OPEN
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  CLOSED
+}
+
+enum AccountSegment {
+  ENTERPRISE
+  MIDMARKET
+  SMB
+}
+
+enum TargetEntitlementStatus {
+  ACTIVE
+  SUSPENDED
+  REMOVED
+}
+
+enum ServiceState {
+  ENABLED
+  RESTRICTED
+  BLOCKED
+}
+
+enum ScenarioType {
+  PREVENTION
+  COMPENSATION
+  CONFLICT
+  VERIFICATION_FAILURE
+  SAFE_REFUSAL
+  FALSE_POSITIVE
+  IDEMPOTENCY
+  STALE_VALID
+  AGENT_SECURITY
+}
+
+enum ScenarioRunStatus {
+  RUNNING
+  PASSED
+  FAILED
+  ABORTED
+}
+
+enum ScenarioRunKind {
+  DETERMINISTIC
+  AGENT
+  ADVERSARIAL
+  LOAD
+  CHAOS
+  DR
+}
+
+enum ActorType {
+  SYSTEM
+  AGENT
+  USER
+  SERVICE
+}
+
+enum OutboxStatus {
+  PENDING
+  PUBLISHING
+  DELIVERED
+  FAILED
+  DLQ
+}
+
+enum PolicyStatus {
+  DRAFT
+  ACTIVE
+  RETIRED
+}
+
+enum BreakGlassStatus {
+  PENDING_COSIGN
+  ACTIVE
+  USED
+  EXPIRED
+  DENIED
+  REVOKED
+}
+
+enum DegradationLevel {
+  L0_NORMAL
+  L1_LLM_DEGRADED
+  L2_TARGET_DEGRADED
+  L3_DB_DEGRADED
+  L4_AUDIT_BROKEN
+  L5_IDENTITY_DEGRADED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String?   @map("password_hash")
+  roles        Role[]    @default([VIEWER])
+  oidcSubject  String?   @unique @map("oidc_subject")
+  sessionEpoch Int       @default(0) @map("session_epoch")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(6)
+  createdById  String?   @map("created_by_id")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  createdBy           User?                 @relation("UserCreator", fields: [createdById], references: [id])
+  createdUsers        User[]                @relation("UserCreator")
+  assignedCases       Case[]                @relation("CaseAssignee")
+  approvals           Approval[]
+  placedHolds         ActionHold[]
+  addedEvidence       EvidenceItem[]
+  activatedPolicies   PolicyVersion[]
+  resolvedExecutions  ActionExecution[]
+  escalations         EscalationEvent[]
+  requestedElevations BreakGlassElevation[] @relation("ElevationRequester")
+  cosignedElevations  BreakGlassElevation[] @relation("ElevationCosigner")
+  scenarioRuns        ScenarioRun[]
+
+  @@map("user")
+}
+
+model SrcContractEntitlement {
+  id              String                  @id @default(cuid())
+  recordRef       String                  @unique @map("record_ref")
+  accountId       String                  @map("account_id")
+  entitlementKey  String                  @map("entitlement_key")
+  status          TargetEntitlementStatus
+  contractVersion String                  @map("contract_version")
+  effectiveFrom   DateTime                @map("effective_from") @db.Timestamptz(6)
+  effectiveTo     DateTime?               @map("effective_to") @db.Timestamptz(6)
+  payload         Json                    @db.JsonB
+  ingestedAt      DateTime                @map("ingested_at") @db.Timestamptz(6)
+
+  @@index([accountId, entitlementKey])
+  @@index([status])
+  @@map("src_contract_entitlement")
+}
+
+model SrcBillingSubscription {
+  id              String   @id @default(cuid())
+  recordRef       String   @unique @map("record_ref")
+  accountId       String   @map("account_id")
+  planCode        String   @map("plan_code")
+  planStatus      String   @map("plan_status")
+  seats           Int
+  mrrMinor        BigInt   @map("mrr_minor")
+  periodStart     DateTime @map("period_start") @db.Timestamptz(6)
+  periodEnd       DateTime @map("period_end") @db.Timestamptz(6)
+  sourceUpdatedAt DateTime @map("source_updated_at") @db.Timestamptz(6)
+  payload         Json     @db.JsonB
+
+  @@index([accountId])
+  @@index([planStatus])
+  @@map("src_billing_subscription")
+}
+
+model SrcUsageEventDaily {
+  id         String   @id @default(cuid())
+  recordRef  String   @unique @map("record_ref")
+  accountId  String   @map("account_id")
+  featureKey String   @map("feature_key")
+  eventDate  DateTime @map("event_date") @db.Date
+  eventCount Int      @map("event_count")
+  lastSeenAt DateTime @map("last_seen_at") @db.Timestamptz(6)
+
+  @@unique([accountId, featureKey, eventDate])
+  @@index([featureKey, eventDate])
+  @@map("src_usage_event_daily")
+}
+
+model SrcSupportTicket {
+  id              String   @id @default(cuid())
+  recordRef       String   @unique @map("record_ref")
+  accountId       String   @map("account_id")
+  subject         String
+  body            String
+  status          String
+  severity        String
+  sourceCreatedAt DateTime @map("source_created_at") @db.Timestamptz(6)
+  payload         Json     @db.JsonB
+
+  @@index([accountId])
+  @@index([sourceCreatedAt])
+  @@map("src_support_ticket")
+}
+
+model SrcAccountRegistry {
+  id              String         @id @default(cuid())
+  accountId       String         @unique @map("account_id")
+  name            String
+  segment         AccountSegment
+  region          String
+  ownerTeam       String         @map("owner_team")
+  accountStatus   AccountStatus  @map("account_status")
+  sourceUpdatedAt DateTime       @map("source_updated_at") @db.Timestamptz(6)
+  payload         Json           @db.JsonB
+
+  @@map("src_account_registry")
+}
+
+model TgtAccount {
+  id        String        @id @default(cuid())
+  accountId String        @unique @map("account_id")
+  name      String
+  status    AccountStatus
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("tgt_account")
+}
+
+model TgtEntitlement {
+  id             String                  @id @default(cuid())
+  accountId      String                  @map("account_id")
+  entitlementKey String                  @map("entitlement_key")
+  status         TargetEntitlementStatus
+  grantedAt      DateTime                @map("granted_at") @db.Timestamptz(6)
+  revokedAt      DateTime?               @map("revoked_at") @db.Timestamptz(6)
+  sourceRef      String                  @map("source_ref")
+  updatedAt      DateTime                @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([accountId, entitlementKey])
+  @@index([entitlementKey, status])
+  @@map("tgt_entitlement")
+}
+
+model TgtServiceStatus {
+  id        String       @id @default(cuid())
+  accountId String       @unique @map("account_id")
+  state     ServiceState
+  reason    String
+  updatedAt DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("tgt_service_status")
+}
+
+model TgtAudit {
+  id             String   @id @default(cuid())
+  at             DateTime @db.Timestamptz(6)
+  actor          String
+  operation      String
+  resourceType   String   @map("resource_type")
+  resourceRef    String   @map("resource_ref")
+  beforeState    Json     @map("before_state") @db.JsonB
+  afterState     Json     @map("after_state") @db.JsonB
+  idempotencyKey String   @unique @map("idempotency_key")
+  requestHash    String   @map("request_hash")
+
+  @@map("tgt_audit")
+}
+
+model DataContract {
+  id                  String   @id @default(cuid())
+  key                 String   @unique
+  name                String
+  sourceKey           String   @map("source_key")
+  fieldPath           String   @map("field_path")
+  version             Int
+  semanticDefinition  String   @map("semantic_definition")
+  expectedValues      String[] @map("expected_values")
+  aliasMap            Json     @map("alias_map") @db.JsonB
+  invariants          Json     @db.JsonB
+  freshnessSlaSeconds Int      @map("freshness_sla_seconds")
+  ownerTeam           String   @map("owner_team")
+  status              String
+
+  snapshots SourceSnapshot[]
+  events    IntegrityEvent[]
+
+  @@map("data_contract")
+}
+
+model SourceSnapshot {
+  id              String   @id @default(cuid())
+  sourceKey       String   @map("source_key")
+  contractId      String?  @map("contract_id")
+  capturedAt      DateTime @map("captured_at") @db.Timestamptz(6)
+  sourceUpdatedAt DateTime @map("source_updated_at") @db.Timestamptz(6)
+  schemaHash      String   @map("schema_hash")
+  payloadHash     String   @map("payload_hash")
+  rowCount        Int      @map("row_count")
+  payload         Json     @db.JsonB
+
+  contract DataContract? @relation(fields: [contractId], references: [id])
+
+  @@unique([contractId, payloadHash])
+  @@index([sourceKey, capturedAt(sort: Desc)])
+  @@map("source_snapshot")
+}
+
+model IntegrityEvent {
+  id                  String               @id @default(cuid())
+  contractId          String               @map("contract_id")
+  type                IntegrityEventType
+  severity            Severity
+  detectedAt          DateTime             @map("detected_at") @db.Timestamptz(6)
+  summary             String
+  scopeSelector       Json                 @map("scope_selector") @db.JsonB
+  evidenceSnapshotIds String[]             @map("evidence_snapshot_ids")
+  status              IntegrityEventStatus
+  fingerprint         String               @unique
+
+  contract DataContract     @relation(fields: [contractId], references: [id])
+  actions  OutboundAction[]
+  cases    Case[]
+
+  @@index([status, detectedAt(sort: Desc)])
+  @@index([severity])
+  @@map("integrity_event")
+}
+
+model OutboundAction {
+  id               String               @id @default(cuid())
+  ref              String               @unique
+  sourceAgent      String               @map("source_agent")
+  accountId        String               @map("account_id")
+  actionType       OutboundActionType   @map("action_type")
+  payload          Json                 @db.JsonB
+  payloadHash      String               @map("payload_hash")
+  requestedAt      DateTime             @map("requested_at") @db.Timestamptz(6)
+  status           OutboundActionStatus
+  gateDecision     GateDecision         @map("gate_decision")
+  gateEvaluatedAt  DateTime             @map("gate_evaluated_at") @db.Timestamptz(6)
+  idempotencyKey   String               @unique @map("idempotency_key")
+  integrityEventId String?              @map("integrity_event_id")
+  caseId           String?              @map("case_id")
+  restorePointId   String?              @map("restore_point_id")
+
+  integrityEvent       IntegrityEvent?      @relation(fields: [integrityEventId], references: [id])
+  case                 Case?                @relation(fields: [caseId], references: [id])
+  restorePoint         RestorePoint?        @relation("ActionRestorePoint", fields: [restorePointId], references: [id])
+  capturedRestorePoint RestorePoint?        @relation("RestorePointAction")
+  holds                ActionHold[]
+  exposedAccounts      CaseExposedAccount[]
+  executions           ActionExecution[]
+
+  @@map("outbound_action")
+}
+
+model RestorePoint {
+  id               String   @id @default(cuid())
+  outboundActionId String   @unique @map("outbound_action_id")
+  targetObjectType String   @map("target_object_type")
+  targetObjectRef  String   @map("target_object_ref")
+  state            Json     @db.JsonB
+  stateHash        String   @map("state_hash")
+  capturedAt       DateTime @map("captured_at") @db.Timestamptz(6)
+
+  outboundAction OutboundAction   @relation("RestorePointAction", fields: [outboundActionId], references: [id])
+  linkedActions  OutboundAction[] @relation("ActionRestorePoint")
+
+  @@map("restore_point")
+}
+
+model ActionHold {
+  id               String    @id @default(cuid())
+  outboundActionId String    @map("outbound_action_id")
+  caseId           String    @map("case_id")
+  reason           String
+  placedAt         DateTime  @map("placed_at") @db.Timestamptz(6)
+  releasedAt       DateTime? @map("released_at") @db.Timestamptz(6)
+  releasedById     String?   @map("released_by_id")
+
+  outboundAction OutboundAction @relation(fields: [outboundActionId], references: [id])
+  case           Case           @relation(fields: [caseId], references: [id])
+  releasedBy     User?          @relation(fields: [releasedById], references: [id])
+
+  @@map("action_hold")
+}
+
+model Case {
+  id                  String            @id @default(cuid())
+  ref                 String            @unique
+  integrityEventId    String            @map("integrity_event_id")
+  title               String
+  status              CaseStatus
+  severity            Severity
+  riskScore           Int               @map("risk_score")
+  riskBand            String            @map("risk_band")
+  exposureCount       Int               @map("exposure_count")
+  estimatedValueMinor BigInt            @map("estimated_value_minor")
+  reopenCount         Int               @default(0) @map("reopen_count")
+  mode                CaseMode
+  resolution          String?
+  openedAt            DateTime          @map("opened_at") @db.Timestamptz(6)
+  lastTransitionAt    DateTime          @map("last_transition_at") @db.Timestamptz(6)
+  closedAt            DateTime?         @map("closed_at") @db.Timestamptz(6)
+  assignedToId        String?           @map("assigned_to_id")
+  slaDueAt            DateTime?         @map("sla_due_at") @db.Timestamptz(6)
+  approvalExpiresAt   DateTime?         @map("approval_expires_at") @db.Timestamptz(6)
+  degradationLevel    DegradationLevel? @map("degradation_level")
+
+  integrityEvent   IntegrityEvent        @relation(fields: [integrityEventId], references: [id])
+  assignedTo       User?                 @relation("CaseAssignee", fields: [assignedToId], references: [id])
+  actions          OutboundAction[]
+  holds            ActionHold[]
+  exposedAccounts  CaseExposedAccount[]
+  reports          InvestigationReport[]
+  hypotheses       Hypothesis[]
+  evidence         EvidenceItem[]
+  evidenceRequests EvidenceRequest[]
+  decisions        PolicyDecision[]
+  approvals        Approval[]
+  executions       ActionExecution[]
+  verifications    VerificationResult[]
+  escalations      EscalationEvent[]
+  elevations       BreakGlassElevation[]
+  auditEvents      AuditEvent[]
+
+  @@index([status, severity, openedAt(sort: Desc)])
+  @@index([lastTransitionAt(sort: Desc)])
+  @@index([approvalExpiresAt])
+  @@map("case")
+}
+
+model CaseExposedAccount {
+  caseId           String  @map("case_id")
+  accountId        String  @map("account_id")
+  outboundActionId String? @map("outbound_action_id")
+  externalRef      String  @map("external_ref")
+
+  case           Case            @relation(fields: [caseId], references: [id])
+  outboundAction OutboundAction? @relation(fields: [outboundActionId], references: [id])
+
+  @@id([caseId, accountId])
+  @@index([accountId])
+  @@map("case_exposed_account")
+}
+
+model InvestigationReport {
+  id                     String      @id @default(cuid())
+  caseId                 String      @map("case_id")
+  runId                  String      @map("run_id")
+  mode                   CaseMode
+  recommendedDisposition Disposition @map("recommended_disposition")
+  confidence             Decimal     @db.Decimal(3, 2)
+  evidenceCompleteness   Decimal     @map("evidence_completeness") @db.Decimal(3, 2)
+  reasoning              String
+  missingEvidence        String[]    @map("missing_evidence")
+  citations              Json        @db.JsonB
+  suspiciousContent      String[]    @default([]) @map("suspicious_content")
+  uncitedClaims          Boolean     @default(false) @map("uncited_claims")
+  modelId                String      @map("model_id")
+  promptVersion          String      @map("prompt_version")
+  evidenceHash           String      @map("evidence_hash")
+  isFallback             Boolean     @map("is_fallback")
+  retried                Boolean     @default(false)
+  tokensUsed             Int?        @map("tokens_used")
+  createdAt              DateTime    @map("created_at") @db.Timestamptz(6)
+
+  case       Case             @relation(fields: [caseId], references: [id])
+  hypotheses Hypothesis[]
+  decisions  PolicyDecision[]
+  approvals  Approval[]
+
+  @@unique([caseId, evidenceHash, promptVersion, mode])
+  @@index([caseId, createdAt(sort: Desc)])
+  @@map("investigation_report")
+}
+
+model Hypothesis {
+  id                String            @id @default(cuid())
+  caseId            String            @map("case_id")
+  reportId          String            @map("report_id")
+  statement         String
+  confidence        Decimal           @db.Decimal(3, 2)
+  verdict           HypothesisVerdict
+  supportingRefs    String[]          @map("supporting_refs")
+  contradictingRefs String[]          @map("contradicting_refs")
+  position          Int
+
+  case   Case                @relation(fields: [caseId], references: [id])
+  report InvestigationReport @relation(fields: [reportId], references: [id])
+
+  @@map("hypothesis")
+}
+
+model EvidenceItem {
+  id         String         @id @default(cuid())
+  caseId     String         @map("case_id")
+  kind       EvidenceKind
+  sourceKey  String         @map("source_key")
+  recordRef  String         @map("record_ref")
+  excerpt    String
+  stance     EvidenceStance
+  capturedAt DateTime       @map("captured_at") @db.Timestamptz(6)
+  addedById  String?        @map("added_by_id")
+
+  case    Case  @relation(fields: [caseId], references: [id])
+  addedBy User? @relation(fields: [addedById], references: [id])
+
+  @@index([caseId, kind])
+  @@map("evidence_item")
+}
+
+model EvidenceRequest {
+  id          String                @id @default(cuid())
+  caseId      String                @map("case_id")
+  ownerTeam   String                @map("owner_team")
+  question    String
+  status      EvidenceRequestStatus
+  requestedAt DateTime              @map("requested_at") @db.Timestamptz(6)
+  dueAt       DateTime              @map("due_at") @db.Timestamptz(6)
+  resolvedAt  DateTime?             @map("resolved_at") @db.Timestamptz(6)
+
+  case Case @relation(fields: [caseId], references: [id])
+
+  @@index([caseId])
+  @@index([status, dueAt])
+  @@map("evidence_request")
+}
+
+model PolicyVersion {
+  id            String       @id @default(cuid())
+  version       String       @unique
+  hash          String       @unique
+  document      Json         @db.JsonB
+  status        PolicyStatus
+  reviewTicket  String       @map("review_ticket")
+  activatedById String?      @map("activated_by_id")
+  activatedAt   DateTime?    @map("activated_at") @db.Timestamptz(6)
+  retiredAt     DateTime?    @map("retired_at") @db.Timestamptz(6)
+  createdAt     DateTime     @map("created_at") @db.Timestamptz(6)
+
+  activatedBy User? @relation(fields: [activatedById], references: [id])
+
+  @@map("policy_version")
+}
+
+model PolicyDecision {
+  id                  String      @id @default(cuid())
+  caseId              String      @map("case_id")
+  reportId            String?     @map("report_id")
+  riskScore           Int         @map("risk_score")
+  riskBand            String      @map("risk_band")
+  disposition         Disposition
+  allowedDispositions String[]    @map("allowed_dispositions")
+  approvalRequired    Boolean     @map("approval_required")
+  requiredApprovals   Int         @map("required_approvals")
+  requiredRoles       String[]    @map("required_roles")
+  approvalExpiresAt   DateTime?   @map("approval_expires_at") @db.Timestamptz(6)
+  reasons             Json        @db.JsonB
+  policyVersion       String      @map("policy_version")
+  policyHash          String      @map("policy_hash")
+  evidenceHash        String      @map("evidence_hash")
+  inputsHash          String      @map("inputs_hash")
+  isFallback          Boolean     @map("is_fallback")
+  createdAt           DateTime    @map("created_at") @db.Timestamptz(6)
+
+  case   Case                 @relation(fields: [caseId], references: [id])
+  report InvestigationReport? @relation(fields: [reportId], references: [id])
+
+  @@map("policy_decision")
+}
+
+model Approval {
+  id                String           @id @default(cuid())
+  caseId            String           @map("case_id")
+  reviewerId        String           @map("reviewer_id")
+  decision          ApprovalDecision
+  disposition       Disposition
+  rationale         String
+  reopenCount       Int              @map("reopen_count")
+  status            ApprovalStatus   @default(VALID)
+  boundEvidenceHash String           @map("bound_evidence_hash")
+  boundPolicyHash   String           @map("bound_policy_hash")
+  boundReportId     String           @map("bound_report_id")
+  expiresAt         DateTime         @map("expires_at") @db.Timestamptz(6)
+  breakGlass        Boolean          @default(false) @map("break_glass")
+  elevationId       String?          @map("elevation_id")
+  createdAt         DateTime         @map("created_at") @db.Timestamptz(6)
+
+  case        Case                 @relation(fields: [caseId], references: [id])
+  reviewer    User                 @relation(fields: [reviewerId], references: [id])
+  boundReport InvestigationReport  @relation(fields: [boundReportId], references: [id])
+  elevation   BreakGlassElevation? @relation(fields: [elevationId], references: [id])
+
+  @@unique([caseId, reopenCount, reviewerId], map: "approval_one_per_reviewer")
+  @@map("approval")
+}
+
+model ActionExecution {
+  id                     String          @id @default(cuid())
+  caseId                 String          @map("case_id")
+  outboundActionId       String?         @map("outbound_action_id")
+  reopenCount            Int             @map("reopen_count")
+  kind                   ExecutionKind
+  targetObjectType       String          @map("target_object_type")
+  targetObjectRef        String          @map("target_object_ref")
+  restorePointId         String?         @map("restore_point_id")
+  idempotencyKey         String          @unique @map("idempotency_key")
+  status                 ExecutionStatus
+  attemptCount           Int             @default(1) @map("attempt_count")
+  requestPayload         Json            @map("request_payload") @db.JsonB
+  responsePayload        Json?           @map("response_payload") @db.JsonB
+  failureCode            String?         @map("failure_code")
+  resolvedByVerification Boolean         @default(false) @map("resolved_by_verification")
+  resolvedById           String?         @map("resolved_by_id")
+  resolvedAt             DateTime?       @map("resolved_at") @db.Timestamptz(6)
+  startedAt              DateTime        @map("started_at") @db.Timestamptz(6)
+  finishedAt             DateTime?       @map("finished_at") @db.Timestamptz(6)
+
+  case           Case                 @relation(fields: [caseId], references: [id])
+  outboundAction OutboundAction?      @relation(fields: [outboundActionId], references: [id])
+  resolvedBy     User?                @relation(fields: [resolvedById], references: [id])
+  verifications  VerificationResult[]
+
+  @@index([caseId])
+  @@index([status])
+  @@index([startedAt])
+  @@map("action_execution")
+}
+
+model VerificationResult {
+  id                String   @id @default(cuid())
+  caseId            String   @map("case_id")
+  executionId       String?  @map("execution_id")
+  expectedState     Json     @map("expected_state") @db.JsonB
+  observedState     Json     @map("observed_state") @db.JsonB
+  observedStateHash String   @map("observed_state_hash")
+  passed            Boolean
+  mismatches        Json     @db.JsonB
+  attemptCount      Int      @map("attempt_count")
+  checkedAt         DateTime @map("checked_at") @db.Timestamptz(6)
+
+  case      Case             @relation(fields: [caseId], references: [id])
+  execution ActionExecution? @relation(fields: [executionId], references: [id])
+
+  @@map("verification_result")
+}
+
+model EscalationEvent {
+  id          String   @id @default(cuid())
+  caseId      String   @map("case_id")
+  reason      String
+  ownerTeam   String   @map("owner_team")
+  note        String?
+  createdById String?  @map("created_by_id")
+  createdAt   DateTime @map("created_at") @db.Timestamptz(6)
+
+  case      Case  @relation(fields: [caseId], references: [id])
+  createdBy User? @relation(fields: [createdById], references: [id])
+
+  @@index([caseId, createdAt])
+  @@map("escalation_event")
+}
+
+model BreakGlassElevation {
+  id              String           @id @default(cuid())
+  caseId          String           @map("case_id")
+  requestedById   String           @map("requested_by_id")
+  cosignedById    String?          @map("cosigned_by_id")
+  status          BreakGlassStatus
+  reason          String
+  caseRef         String           @map("case_ref")
+  cosignExpiresAt DateTime         @map("cosign_expires_at") @db.Timestamptz(6)
+  expiresAt       DateTime         @map("expires_at") @db.Timestamptz(6)
+  usedAt          DateTime?        @map("used_at") @db.Timestamptz(6)
+  createdAt       DateTime         @map("created_at") @db.Timestamptz(6)
+
+  case        Case       @relation(fields: [caseId], references: [id])
+  requestedBy User       @relation("ElevationRequester", fields: [requestedById], references: [id])
+  cosignedBy  User?      @relation("ElevationCosigner", fields: [cosignedById], references: [id])
+  approvals   Approval[]
+
+  @@map("break_glass_elevation")
+}
+
+model AuditEvent {
+  id            String    @id @default(cuid())
+  seq           BigInt    @unique @default(autoincrement())
+  caseId        String?   @map("case_id")
+  actorType     ActorType @map("actor_type")
+  actorId       String?   @map("actor_id")
+  eventType     String    @map("event_type")
+  payload       Json      @db.JsonB
+  requestId     String    @map("request_id")
+  traceId       String?   @map("trace_id")
+  ip            String?   @db.Inet
+  userAgent     String?   @map("user_agent")
+  policyVersion String?   @map("policy_version")
+  policyHash    String?   @map("policy_hash")
+  prevHash      String?   @map("prev_hash")
+  hash          String
+  createdAt     DateTime  @map("created_at") @db.Timestamptz(6)
+
+  case Case? @relation(fields: [caseId], references: [id])
+
+  @@index([caseId, createdAt])
+  @@index([eventType, createdAt(sort: Desc)])
+  @@index([requestId])
+  @@index([traceId])
+  @@map("audit_event")
+}
+
+model AuditAnchor {
+  id                 String    @id @default(cuid())
+  fromSeq            BigInt    @map("from_seq")
+  toSeq              BigInt    @map("to_seq")
+  eventCount         Int       @map("event_count")
+  rootHash           String    @map("root_hash")
+  previousAnchorHash String?   @map("previous_anchor_hash")
+  externalUri        String    @map("external_uri")
+  externalEtag       String?   @map("external_etag")
+  status             String
+  anchoredAt         DateTime  @map("anchored_at") @db.Timestamptz(6)
+  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
+
+  @@unique([fromSeq, toSeq])
+  @@map("audit_anchor")
+}
+
+model OutboxEvent {
+  id             String       @id @default(cuid())
+  eventType      String       @map("event_type")
+  aggregateType  String       @map("aggregate_type")
+  aggregateId    String       @map("aggregate_id")
+  payload        Json         @db.JsonB
+  dedupeKey      String       @unique @map("dedupe_key")
+  status         OutboxStatus @default(PENDING)
+  attemptCount   Int          @default(0) @map("attempt_count")
+  maxAttempts    Int          @default(8) @map("max_attempts")
+  nextAttemptAt  DateTime     @map("next_attempt_at") @db.Timestamptz(6)
+  lastError      String?      @map("last_error")
+  createdAt      DateTime     @map("created_at") @db.Timestamptz(6)
+  deliveredAt    DateTime?    @map("delivered_at") @db.Timestamptz(6)
+  deadLetteredAt DateTime?    @map("dead_lettered_at") @db.Timestamptz(6)
+
+  @@index([status, nextAttemptAt])
+  @@index([aggregateType, aggregateId])
+  @@map("outbox_event")
+}
+
+model IdempotencyRecord {
+  id             String    @id @default(cuid())
+  scope          String
+  key            String
+  requestHash    String    @map("request_hash")
+  status         String
+  responseStatus Int?      @map("response_status")
+  responseBody   Json?     @map("response_body") @db.JsonB
+  resourceType   String?   @map("resource_type")
+  resourceId     String?   @map("resource_id")
+  createdAt      DateTime  @map("created_at") @db.Timestamptz(6)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(6)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(6)
+
+  @@unique([scope, key], map: "idempotency_scope")
+  @@map("idempotency_record")
+}
+
+model JobHeartbeat {
+  job                 String    @id
+  lastStartedAt       DateTime  @map("last_started_at") @db.Timestamptz(6)
+  lastSuccessAt       DateTime? @map("last_success_at") @db.Timestamptz(6)
+  lastError           String?   @map("last_error")
+  consecutiveFailures Int       @default(0) @map("consecutive_failures")
+
+  @@map("job_heartbeat")
+}
+
+model DegradationState {
+  id        String           @id @default(cuid())
+  level     DegradationLevel
+  reason    String
+  setBy     String           @map("set_by")
+  changedAt DateTime         @map("changed_at") @db.Timestamptz(6)
+
+  @@map("degradation_state")
+}
+
+model Scenario {
+  id                        String       @id @default(cuid())
+  key                       String       @unique
+  title                     String
+  type                      ScenarioType
+  expectedReportDisposition Disposition? @map("expected_report_disposition")
+  expectedPolicyDisposition Disposition? @map("expected_policy_disposition")
+  fixturePath               String       @map("fixture_path")
+  suiteVersion              String       @map("suite_version")
+  notes                     String
+
+  results ScenarioResult[]
+
+  @@map("scenario")
+}
+
+model ScenarioRun {
+  id            String            @id @default(cuid())
+  suiteVersion  String            @map("suite_version")
+  kind          ScenarioRunKind
+  mode          CaseMode
+  status        ScenarioRunStatus
+  commitSha     String            @map("commit_sha")
+  environment   String
+  modelId       String?           @map("model_id")
+  promptVersion String            @map("prompt_version")
+  policyVersion String            @map("policy_version")
+  policyHash    String            @map("policy_hash")
+  startedAt     DateTime          @map("started_at") @db.Timestamptz(6)
+  finishedAt    DateTime          @map("finished_at") @db.Timestamptz(6)
+  summary       Json              @db.JsonB
+  triggeredById String?           @map("triggered_by_id")
+  error         String?
+
+  triggeredBy User?            @relation(fields: [triggeredById], references: [id])
+  results     ScenarioResult[]
+
+  @@map("scenario_run")
+}
+
+model ScenarioResult {
+  id         String  @id @default(cuid())
+  runId      String  @map("run_id")
+  scenarioId String  @map("scenario_id")
+  passed     Boolean
+  expected   Json    @db.JsonB
+  actual     Json    @db.JsonB
+  durationMs Int     @map("duration_ms")
+  details    Json    @db.JsonB
+
+  run      ScenarioRun @relation(fields: [runId], references: [id])
+  scenario Scenario    @relation(fields: [scenarioId], references: [id])
+
+  @@unique([runId, scenarioId])
+  @@map("scenario_result")
+}
+
+model KpiSnapshot {
+  id            String   @id @default(cuid())
+  capturedAt    DateTime @map("captured_at") @db.Timestamptz(6)
+  windowStart   DateTime @map("window_start") @db.Timestamptz(6)
+  windowEnd     DateTime @map("window_end") @db.Timestamptz(6)
+  metrics       Json     @db.JsonB
+  policyVersion String   @map("policy_version")
+  policyHash    String   @map("policy_hash")
+
+  @@map("kpi_snapshot")
+}

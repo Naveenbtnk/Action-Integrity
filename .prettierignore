@@ -1,0 +1,10 @@
+.next
+node_modules
+storybook-static
+src/generated/prisma
+package-lock.json
+artifacts
+var
+# Historical specification files are maintained as authored; format edited sections deliberately.
+docs/
+AGENTS.md

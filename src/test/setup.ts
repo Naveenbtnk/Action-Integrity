@@ -1,0 +1,18 @@
+Object.assign(process.env, {
+  NODE_ENV: 'test',
+  DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+  DIRECT_DATABASE_URL: 'postgresql://test:test@localhost:5432/test',
+  AUTH_SECRET: 'test-secret-with-more-than-32-characters',
+  AUTH_CREDENTIALS_ENABLED: 'false',
+  GEMINI_API_KEY: 'test-key',
+  GEMINI_MODEL: 'test-model',
+  AGENT_SERVICE_KEY: 'test-agent-key-with-more-than-32-characters',
+  TARGET_SERVICE_KEY: 'test-target-key-with-more-than-32-characters',
+  OPS_SERVICE_KEY: 'test-ops-key-with-more-than-32-characters',
+  AIC_BASE_URL: 'http://localhost:3000',
+  INVESTIGATION_MODE: 'deterministic',
+  OTEL_SDK_DISABLED: '1',
+  LOG_PRETTY: 'false',
+  ALLOW_DB_RESET: 'false',
+  ALLOW_DEMO_RESET: 'false',
+});
