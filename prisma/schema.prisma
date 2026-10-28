@@ -595,7 +595,7 @@ model InvestigationReport {
   citations              Json        @db.JsonB
   suspiciousContent      String[]    @default([]) @map("suspicious_content")
   uncitedClaims          Boolean     @default(false) @map("uncited_claims")
-  modelId                String      @map("model_id")
+  modelId                String?     @map("model_id")
   promptVersion          String      @map("prompt_version")
   evidenceHash           String      @map("evidence_hash")
   isFallback             Boolean     @map("is_fallback")

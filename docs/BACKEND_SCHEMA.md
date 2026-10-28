@@ -234,7 +234,7 @@ Index: `(accountId)`.
 `recommendedDisposition` (`Disposition`) · `confidence` numeric(3,2) · `evidenceCompleteness`
 numeric(3,2) · `reasoning` text · `missingEvidence` text[] · `citations` jsonb
 (`[{kind,ref,excerpt}]`) · `suspiciousContent` text[] default `{}` · `uncitedClaims` bool default false ·
-`modelId` · `promptVersion` · `evidenceHash` · `isFallback` bool ·
+`modelId` nullable (null for fallback) · `promptVersion` · `evidenceHash` · `isFallback` bool ·
 `retried` bool default false · `tokensUsed` int nullable (null when `isFallback`) · `createdAt`
 Unique: `(caseId, evidenceHash, promptVersion, mode)` — cache key.
 Index: `(caseId, createdAt desc)`.

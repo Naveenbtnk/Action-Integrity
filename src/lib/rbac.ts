@@ -160,4 +160,28 @@ export const ROUTE_PERMISSIONS: ReadonlyArray<{
   { method: 'GET', pattern: '/api/v1/actions/:id', permission: 'action:read', rateLimit: 'read' },
   { method: 'GET', pattern: '/api/v1/cases', permission: 'case:read', rateLimit: 'read' },
   { method: 'GET', pattern: '/api/v1/cases/:ref', permission: 'case:read', rateLimit: 'read' },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/investigate',
+    permission: 'case:investigate',
+    rateLimit: 'investigate',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/cases/:ref/report',
+    permission: 'case:read',
+    rateLimit: 'read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/evidence',
+    permission: 'case:add_evidence',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/evidence-requests',
+    permission: 'case:request_evidence',
+    rateLimit: 'write',
+  },
 ];

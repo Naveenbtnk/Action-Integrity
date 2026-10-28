@@ -168,7 +168,10 @@ export async function ingestAction(tx: Prisma.TransactionClient, input: IngestIn
       },
     },
   });
-  const exposure = computeExposure(event, [action, ...nearby]);
+  const exposure = computeExposure(event, [
+    { ...action, status: OutboundActionStatus.PENDING },
+    ...nearby,
+  ]);
   const estimated = await tx.srcBillingSubscription.aggregate({
     where: { accountId: { in: exposure.accountIds } },
     _sum: { mrrMinor: true },

@@ -69,6 +69,11 @@ jobs:
       - run: npm run test:integration -- target
       - run: npm run test:integration -- evaluate dismiss
       - run: npm run test:integration -- ingest rbac-routes
+      - run: npm run test:integration -- investigate evidence
+      - name: Verify deterministic investigator without a Gemini key
+        run: npm run test:integration -- investigate evidence
+        env:
+          GEMINI_API_KEY: ''
       - run: npm run test:scenarios -- --scenario=A --upto=ingest
       - run: npm run build
       - name: Verify production HTTP routes
@@ -83,6 +88,7 @@ jobs:
           npm run test:http
           npm run test:integrity-http
           npm run test:phase4-http
+          npm run test:phase5-http
 
   public-site:
     runs-on: ubuntu-latest

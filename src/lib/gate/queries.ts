@@ -113,12 +113,10 @@ export async function listCases(query: {
     ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
   });
   return {
-    cases: cases
-      .slice(0, query.limit)
-      .map((caseRow) => ({
-        ...caseRow,
-        estimatedValueMinor: caseRow.estimatedValueMinor.toString(),
-      })),
+    cases: cases.slice(0, query.limit).map((caseRow) => ({
+      ...caseRow,
+      estimatedValueMinor: caseRow.estimatedValueMinor.toString(),
+    })),
     nextCursor: cases.length > query.limit ? cases[query.limit - 1]?.id : null,
   };
 }
@@ -131,6 +129,9 @@ export async function getCase(ref: string) {
       actions: true,
       holds: true,
       exposedAccounts: true,
+      reports: { orderBy: { createdAt: 'desc' }, take: 1, include: { hypotheses: true } },
+      evidence: { orderBy: { capturedAt: 'asc' } },
+      evidenceRequests: { orderBy: { requestedAt: 'asc' } },
       auditEvents: { orderBy: { seq: 'asc' } },
     },
   });
@@ -140,13 +141,17 @@ export async function getCase(ref: string) {
       ...caseRow,
       estimatedValueMinor: caseRow.estimatedValueMinor.toString(),
       auditEvents: undefined,
+      reports: undefined,
+      evidence: undefined,
+      evidenceRequests: undefined,
     },
     event: caseRow.integrityEvent,
     actions: caseRow.actions,
     holds: caseRow.holds,
     exposedAccounts: caseRow.exposedAccounts,
-    investigation: [],
-    evidence: [],
+    investigation: caseRow.reports[0] ?? null,
+    evidence: caseRow.evidence,
+    evidenceRequests: caseRow.evidenceRequests,
     policy: [],
     approvals: [],
     execution: [],

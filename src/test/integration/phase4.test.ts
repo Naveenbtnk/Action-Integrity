@@ -97,6 +97,10 @@ try {
     const caseRow = await db.case.findUniqueOrThrow({ where: { ref: first.data.gate.caseRef } });
     assert.equal(caseRow.status, CaseStatus.HOLDING);
     assert.equal(
+      await db.caseExposedAccount.count({ where: { caseId: caseRow.id, accountId } }),
+      1,
+    );
+    assert.equal(
       await db.auditEvent.count({ where: { caseId: caseRow.id, eventType: 'CASE_OPENED' } }),
       1,
     );

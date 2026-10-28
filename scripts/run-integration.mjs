@@ -4,6 +4,7 @@ const args = process.argv.slice(2);
 for (const file of [
   'src/test/integration/systems.test.ts',
   'src/test/integration/phase4.test.ts',
+  'src/test/integration/phase5.test.ts',
 ]) {
   const result = spawnSync(
     process.execPath,

@@ -23,7 +23,7 @@ const EnvironmentSchema = z.object({
   OIDC_CLIENT_SECRET: z.string().optional(),
   OIDC_ROLE_CLAIM: z.string().default('roles'),
   SESSION_COOKIE_NAME: z.string().default('aic_session'),
-  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
+  GEMINI_API_KEY: z.string().min(1).optional().or(z.literal('')),
   GEMINI_MODEL: z.string().min(1, 'GEMINI_MODEL is required'),
   AGENT_SERVICE_KEY: z.string().min(32, 'AGENT_SERVICE_KEY must contain at least 32 characters'),
   AGENT_SERVICE_KEY_PREVIOUS: z.string().min(32).optional(),

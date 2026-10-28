@@ -91,3 +91,86 @@ export async function withIdempotency<T>(
     throw cause;
   }
 }
+
+export async function withIdempotencyExternal<T>(
+  request: Request,
+  actorKey: string,
+  body: unknown,
+  work: () => Promise<WorkResult<T>>,
+): Promise<{ status: number; data: T; replayed: boolean }> {
+  const key = request.headers.get('idempotency-key');
+  if (!key) throw new AppError('IDEMPOTENCY_KEY_REQUIRED', 400, 'Idempotency-Key is required.');
+  if (!/^[A-Za-z0-9_-]{8,128}$/.test(key)) throw new ValidationError('Invalid Idempotency-Key.');
+  const scope = `${new URL(request.url).pathname}:${actorKey}`;
+  const requestHash = sha(body);
+  const lookup = { scope_key: { scope, key } };
+  async function completed() {
+    const row = await db.idempotencyRecord.findUnique({ where: lookup });
+    if (!row) return null;
+    if (row.requestHash !== requestHash)
+      throw new ConflictError('IDEMPOTENCY_CONFLICT', 'The key was used with a different request.');
+    return row.status === 'COMPLETED' && row.responseBody && row.responseStatus
+      ? { status: row.responseStatus, data: row.responseBody as T, replayed: true }
+      : null;
+  }
+  const prior = await completed();
+  if (prior) return prior;
+  const now = new Date();
+  await db.idempotencyRecord.deleteMany({
+    where: {
+      scope,
+      key,
+      status: 'IN_PROGRESS',
+      createdAt: { lt: new Date(now.getTime() - 60_000) },
+    },
+  });
+  const inserted = await db.idempotencyRecord.createMany({
+    data: [
+      {
+        scope,
+        key,
+        requestHash,
+        status: 'IN_PROGRESS',
+        createdAt: now,
+        expiresAt: new Date(now.getTime() + 30 * 86_400_000),
+      },
+    ],
+    skipDuplicates: true,
+  });
+  if (!inserted.count) {
+    const deadline = Date.now() + 5_000;
+    do {
+      const result = await completed();
+      if (result) return result;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } while (Date.now() < deadline);
+    throw new ConflictError('IDEMPOTENCY_IN_PROGRESS', 'The request is still in progress.', {
+      retryAfter: 1,
+    });
+  }
+  try {
+    const result = await work();
+    const normalized = JSON.parse(
+      JSON.stringify(result.data, (_, value: unknown) =>
+        typeof value === 'bigint' ? value.toString() : value,
+      ),
+    ) as T;
+    await db.idempotencyRecord.update({
+      where: lookup,
+      data: {
+        status: 'COMPLETED',
+        responseStatus: result.status,
+        responseBody: normalized as Prisma.InputJsonValue,
+        resourceType: result.resourceType ?? null,
+        resourceId: result.resourceId ?? null,
+        completedAt: new Date(),
+      },
+    });
+    return { status: result.status, data: normalized, replayed: false };
+  } catch (cause) {
+    await db.idempotencyRecord
+      .deleteMany({ where: { scope, key, status: 'IN_PROGRESS' } })
+      .catch(() => undefined);
+    throw cause;
+  }
+}
