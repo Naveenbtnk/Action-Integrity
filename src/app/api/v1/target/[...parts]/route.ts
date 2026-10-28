@@ -4,6 +4,7 @@ import { ServiceState, TargetEntitlementStatus } from '@/generated/prisma/enums'
 import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
 import { AppError, ValidationError } from '@/lib/errors';
 import { successResponse, withRoute } from '@/lib/http';
+import { requirePermission } from '@/lib/rbac';
 import { requireTargetKey } from '@/lib/target/auth';
 import * as target from '@/lib/target/service';
 
@@ -53,6 +54,7 @@ async function body<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
 
 export const GET = withRoute(async (request, context) => {
   requireTargetKey(request);
+  requirePermission({ service: 'SERVICE_TARGET' }, 'service:target_read');
   await enforceAdapterLimit('target-read', 'target');
   const path = parts(request);
   const url = new URL(request.url);
@@ -82,6 +84,7 @@ export const GET = withRoute(async (request, context) => {
 
 export const POST = withRoute(async (request, context) => {
   requireTargetKey(request);
+  requirePermission({ service: 'SERVICE_TARGET' }, 'service:target_write');
   await enforceAdapterLimit('target-write', 'target');
   const key = idempotencyKey(request);
   const path = parts(request);

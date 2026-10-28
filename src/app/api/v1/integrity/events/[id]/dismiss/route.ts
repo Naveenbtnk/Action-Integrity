@@ -1,16 +1,17 @@
 import { z } from 'zod';
 
 import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
-import { requireHuman, requireIntegrityPermission } from '@/lib/auth/human';
+import { requireHuman } from '@/lib/auth/human';
 import { AppError, ValidationError } from '@/lib/errors';
 import { successResponse, withRoute } from '@/lib/http';
 import { dismissIntegrityEvent } from '@/lib/integrity-runner/dismiss';
+import { requirePermission } from '@/lib/rbac';
 
 const Body = z.object({ reason: z.string().trim().min(3).max(1000) }).strict();
 
 export const POST = withRoute(async (request, context) => {
   const principal = await requireHuman(request);
-  requireIntegrityPermission(principal, 'integrity:dismiss');
+  requirePermission(principal, 'integrity:dismiss');
   await enforceAdapterLimit('write', principal.id);
   const key = request.headers.get('idempotency-key');
   if (!key) throw new AppError('IDEMPOTENCY_KEY_REQUIRED', 400, 'Idempotency-Key is required.');

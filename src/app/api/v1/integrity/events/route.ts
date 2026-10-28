@@ -2,10 +2,11 @@ import { z } from 'zod';
 
 import { IntegrityEventStatus, Severity } from '@/generated/prisma/enums';
 import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
-import { requireHuman, requireIntegrityPermission } from '@/lib/auth/human';
+import { requireHuman } from '@/lib/auth/human';
 import { db } from '@/lib/db';
 import { ValidationError } from '@/lib/errors';
 import { successResponse, withRoute } from '@/lib/http';
+import { requirePermission } from '@/lib/rbac';
 
 const Query = z.object({
   status: z.enum(IntegrityEventStatus).optional(),
@@ -16,7 +17,7 @@ const Query = z.object({
 
 export const GET = withRoute(async (request, context) => {
   const principal = await requireHuman(request);
-  requireIntegrityPermission(principal, 'integrity:read');
+  requirePermission(principal, 'integrity:read');
   await enforceAdapterLimit('read', principal.id);
   const query = Query.safeParse(Object.fromEntries(new URL(request.url).searchParams));
   if (!query.success) throw new ValidationError('Invalid event query.');

@@ -4,6 +4,7 @@ import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
 import { AppError, ValidationError } from '@/lib/errors';
 import { successResponse, withRoute } from '@/lib/http';
 import { evaluateIdempotently } from '@/lib/integrity-runner/request';
+import { requirePermission } from '@/lib/rbac';
 import { requireAgentKey } from '@/lib/target/auth';
 
 const Body = z
@@ -12,6 +13,7 @@ const Body = z
 
 export const POST = withRoute(async (request, context) => {
   requireAgentKey(request);
+  requirePermission({ service: 'SERVICE_AGENT' }, 'service:evaluate');
   const key = request.headers.get('idempotency-key');
   if (!key) throw new AppError('IDEMPOTENCY_KEY_REQUIRED', 400, 'Idempotency-Key is required.');
   if (!/^[A-Za-z0-9_-]{8,128}$/.test(key)) throw new ValidationError('Invalid Idempotency-Key.');

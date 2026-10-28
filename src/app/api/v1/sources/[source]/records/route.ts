@@ -4,6 +4,7 @@ import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
 import { getSource, isSourceKey } from '@/lib/adapters/registry';
 import { ValidationError } from '@/lib/errors';
 import { successResponse, withRoute } from '@/lib/http';
+import { requirePermission } from '@/lib/rbac';
 import { requireAgentKey } from '@/lib/target/auth';
 
 const Query = z.object({
@@ -13,6 +14,7 @@ const Query = z.object({
 
 export const GET = withRoute(async (request, context) => {
   requireAgentKey(request);
+  requirePermission({ service: 'SERVICE_AGENT' }, 'service:source_read');
   const source = new URL(request.url).pathname.split('/').at(-2) ?? '';
   if (!isSourceKey(source)) throw new ValidationError('Unknown source.');
   const url = new URL(request.url);

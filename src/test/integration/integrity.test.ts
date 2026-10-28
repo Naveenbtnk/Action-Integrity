@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Role } from '@/generated/prisma/enums';
-import { requireIntegrityPermission } from '@/lib/auth/human';
 import { canonicalJson } from '@/lib/canonical-json';
 import { db } from '@/lib/db';
 import { DependencyUnavailableError, ForbiddenError } from '@/lib/errors';
 import { sha } from '@/lib/integrity/hash';
 import { dismissIntegrityEvent } from '@/lib/integrity-runner/dismiss';
 import { evaluateContracts } from '@/lib/integrity-runner/evaluate';
+import { requirePermission } from '@/lib/rbac';
 
 export async function runIntegrityTests(requested: Set<string>): Promise<void> {
   if (requested.has('evaluate-all')) {
@@ -117,12 +117,12 @@ export async function runIntegrityTests(requested: Set<string>): Promise<void> {
   if (requested.has('dismiss')) {
     for (const role of [Role.ANALYST, Role.VIEWER, Role.AUDITOR]) {
       assert.throws(
-        () => requireIntegrityPermission({ id: 'test', roles: [role] }, 'integrity:dismiss'),
+        () => requirePermission({ roles: [role] }, 'integrity:dismiss'),
         ForbiddenError,
       );
     }
     const reviewer = await db.user.findUniqueOrThrow({ where: { email: 'reviewer@aic.local' } });
-    requireIntegrityPermission({ id: reviewer.id, roles: reviewer.roles }, 'integrity:dismiss');
+    requirePermission({ roles: reviewer.roles }, 'integrity:dismiss');
     const contract = await db.dataContract.findUniqueOrThrow({
       where: { key: 'billing.plan_status' },
     });

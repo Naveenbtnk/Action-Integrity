@@ -2,10 +2,10 @@ import 'server-only';
 
 import { getToken } from 'next-auth/jwt';
 
-import { Role } from '@/generated/prisma/enums';
+import type { Role } from '@/generated/prisma/enums';
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
-import { AppError, ForbiddenError, SessionStaleError, UnauthenticatedError } from '@/lib/errors';
+import { AppError, SessionStaleError, UnauthenticatedError } from '@/lib/errors';
 
 export type HumanPrincipal = { id: string; roles: Role[] };
 
@@ -43,14 +43,4 @@ export async function requireHuman(request: Request): Promise<HumanPrincipal> {
   if (!user.isActive) throw new AppError('USER_INACTIVE', 403, 'User is inactive.');
   if (user.sessionEpoch !== token.sessionEpoch) throw new SessionStaleError();
   return { id: user.id, roles: user.roles };
-}
-
-export function requireIntegrityPermission(
-  principal: HumanPrincipal,
-  permission: 'integrity:read' | 'integrity:dismiss',
-): void {
-  if (permission === 'integrity:read') return;
-  if (principal.roles.includes(Role.REVIEWER) || principal.roles.includes(Role.SENIOR_REVIEWER))
-    return;
-  throw new ForbiddenError();
 }

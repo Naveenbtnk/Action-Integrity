@@ -7,12 +7,14 @@ import { ActorType, DegradationLevel } from '@/generated/prisma/enums';
 import { canonicalJson } from '@/lib/canonical-json';
 import { DegradationBlockedError } from '@/lib/errors';
 
-export async function appendIntegrityDismissal(
+export async function appendAuditEvent(
   tx: Prisma.TransactionClient,
   input: {
-    eventId: string;
-    actorId: string;
-    reasonHash: string;
+    eventType: string;
+    actorType: ActorType;
+    actorId?: string | null;
+    caseId?: string | null;
+    payload: Prisma.InputJsonValue;
     requestId: string;
     traceId?: string | undefined;
   },
@@ -30,15 +32,16 @@ export async function appendIntegrityDismissal(
   const sequence = await tx.$queryRaw<
     Array<{ seq: bigint }>
   >`SELECT nextval(pg_get_serial_sequence('audit_event', 'seq')) AS seq`;
-  const seq = sequence[0]!.seq;
+  const first = sequence[0];
+  if (!first) throw new Error('Audit sequence unavailable.');
+  const seq = first.seq;
   const createdAt = new Date();
-  const payload = { integrityEventId: input.eventId, reasonHash: input.reasonHash };
   const body = {
-    eventType: 'INTEGRITY_DISMISSED',
-    actorType: ActorType.USER,
-    actorId: input.actorId,
-    caseId: null,
-    payload,
+    eventType: input.eventType,
+    actorType: input.actorType,
+    actorId: input.actorId ?? null,
+    caseId: input.caseId ?? null,
+    payload: input.payload,
     createdAt: createdAt.toISOString(),
   };
   const hash = `sha256:${createHash('sha256')
@@ -47,15 +50,36 @@ export async function appendIntegrityDismissal(
   await tx.auditEvent.create({
     data: {
       seq,
-      actorType: ActorType.USER,
-      actorId: input.actorId,
-      eventType: 'INTEGRITY_DISMISSED',
-      payload,
+      actorType: input.actorType,
+      actorId: input.actorId ?? null,
+      caseId: input.caseId ?? null,
+      eventType: input.eventType,
+      payload: input.payload,
       requestId: input.requestId,
       traceId: input.traceId ?? null,
       prevHash: previous?.hash ?? null,
       hash,
       createdAt,
     },
+  });
+}
+
+export async function appendIntegrityDismissal(
+  tx: Prisma.TransactionClient,
+  input: {
+    eventId: string;
+    actorId: string;
+    reasonHash: string;
+    requestId: string;
+    traceId?: string | undefined;
+  },
+): Promise<void> {
+  return appendAuditEvent(tx, {
+    eventType: 'INTEGRITY_DISMISSED',
+    actorType: ActorType.USER,
+    actorId: input.actorId,
+    payload: { integrityEventId: input.eventId, reasonHash: input.reasonHash },
+    requestId: input.requestId,
+    traceId: input.traceId,
   });
 }

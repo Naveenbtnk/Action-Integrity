@@ -82,6 +82,7 @@ jobs:
           done
           npm run test:http
           npm run test:integrity-http
+          npm run test:phase4-http
 
   public-site:
     runs-on: ubuntu-latest

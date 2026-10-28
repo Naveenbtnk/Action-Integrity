@@ -1,0 +1,163 @@
+import 'server-only';
+
+import { Role } from '@/generated/prisma/enums';
+import { ForbiddenError } from '@/lib/errors';
+
+export const ROLES = Role;
+export const PERMISSIONS = [
+  'case:read',
+  'action:read',
+  'contract:read',
+  'integrity:read',
+  'kpi:read',
+  'audit:read',
+  'policy:read',
+  'eval:read',
+  'user:read',
+  'ops:read',
+  'integrity:dismiss',
+  'case:investigate',
+  'case:request_evidence',
+  'case:add_evidence',
+  'case:compute_policy',
+  'case:approve',
+  'case:approve_high',
+  'case:execute',
+  'case:execute_high',
+  'case:verify',
+  'case:reopen',
+  'case:escalate',
+  'kpi:refresh',
+  'eval:run',
+  'policy:activate',
+  'user:manage',
+  'ops:reconcile',
+  'ops:outbox',
+  'ops:anchor',
+  'audit:verify',
+  'break_glass:request',
+  'break_glass:cosign',
+  'service:ingest',
+  'service:evaluate',
+  'service:source_read',
+  'service:target_read',
+  'service:target_write',
+] as const;
+export type Permission = (typeof PERMISSIONS)[number];
+
+const READ_COMMON: Permission[] = [
+  'case:read',
+  'action:read',
+  'contract:read',
+  'integrity:read',
+  'kpi:read',
+  'audit:read',
+  'policy:read',
+];
+const ANALYST_WRITES: Permission[] = [
+  'case:investigate',
+  'case:request_evidence',
+  'case:add_evidence',
+  'case:compute_policy',
+  'case:escalate',
+];
+const REVIEWER_WRITES: Permission[] = [
+  'integrity:dismiss',
+  'case:approve',
+  'case:execute',
+  'case:execute_high',
+  'case:verify',
+  'case:reopen',
+];
+const ADMIN_READS: Permission[] = ['eval:read', 'user:read', 'ops:read'];
+export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
+  VIEWER: READ_COMMON,
+  ANALYST: [...READ_COMMON, ...ANALYST_WRITES],
+  REVIEWER: [...READ_COMMON, ...ANALYST_WRITES, ...REVIEWER_WRITES],
+  SENIOR_REVIEWER: [...READ_COMMON, ...ANALYST_WRITES, ...REVIEWER_WRITES, 'case:approve_high'],
+  ADMIN: [
+    ...READ_COMMON,
+    ...ADMIN_READS,
+    'kpi:refresh',
+    'eval:run',
+    'policy:activate',
+    'user:manage',
+    'ops:reconcile',
+    'ops:outbox',
+    'ops:anchor',
+    'audit:verify',
+    'break_glass:request',
+    'break_glass:cosign',
+  ],
+  AUDITOR: [...READ_COMMON, ...ADMIN_READS, 'audit:verify'],
+};
+export const SERVICE_PERMISSIONS = {
+  SERVICE_AGENT: ['service:ingest', 'service:evaluate', 'service:source_read'],
+  SERVICE_TARGET: ['service:target_read', 'service:target_write'],
+  SERVICE_OPS: ['ops:reconcile', 'ops:outbox', 'ops:anchor'],
+} as const satisfies Record<string, readonly Permission[]>;
+
+export type Principal = { roles: Role[] } | { service: keyof typeof SERVICE_PERMISSIONS };
+
+export function requirePermission(principal: Principal, permission: Permission): void {
+  const granted =
+    'service' in principal
+      ? (SERVICE_PERMISSIONS[principal.service] as readonly Permission[]).includes(permission)
+      : principal.roles.some((role) => ROLE_PERMISSIONS[role].includes(permission));
+  if (!granted) throw new ForbiddenError();
+}
+
+export const ROUTE_PERMISSIONS: ReadonlyArray<{
+  method: string;
+  pattern: string;
+  permission: Permission | 'public';
+  rateLimit: string;
+}> = [
+  { method: 'GET', pattern: '/api/v1/health', permission: 'public', rateLimit: 'read' },
+  {
+    method: 'POST',
+    pattern: '/api/v1/integrity/evaluate',
+    permission: 'service:evaluate',
+    rateLimit: 'integrity',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/integrity/events',
+    permission: 'integrity:read',
+    rateLimit: 'read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/integrity/events/:id/dismiss',
+    permission: 'integrity:dismiss',
+    rateLimit: 'write',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/sources/:source/records',
+    permission: 'service:source_read',
+    rateLimit: 'sources',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/target/*',
+    permission: 'service:target_read',
+    rateLimit: 'target-read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/target/*',
+    permission: 'service:target_write',
+    rateLimit: 'target-write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/actions/ingest',
+    permission: 'service:ingest',
+    rateLimit: 'ingest',
+  },
+  { method: 'GET', pattern: '/api/v1/actions', permission: 'action:read', rateLimit: 'read' },
+  { method: 'GET', pattern: '/api/v1/actions/:id', permission: 'action:read', rateLimit: 'read' },
+  { method: 'GET', pattern: '/api/v1/cases', permission: 'case:read', rateLimit: 'read' },
+  { method: 'GET', pattern: '/api/v1/cases/:ref', permission: 'case:read', rateLimit: 'read' },
+];
