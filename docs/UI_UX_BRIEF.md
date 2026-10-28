@@ -5,6 +5,9 @@ frontend structure. It supersedes the earlier operator-console brief; that direc
 **Experience direction:** steel blueprint at midnight.
 **Source:** the supplied UI/UX specification dated 27 October 2026, adopted as the primary frontend
 document. Backend contracts remain in `API.md`, `RBAC.md`, `BACKEND_SCHEMA.md` and `ARCHITECTURE.md`.
+**Public-site amendment:** ADR-027 places the product and trust pages in a separate static Astro
+project at `apps/public`. The authenticated console and API remain in Next.js. The canonical
+visual tokens and accessibility rules below apply to both origins.
 
 ---
 

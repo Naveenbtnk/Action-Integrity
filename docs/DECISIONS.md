@@ -314,6 +314,24 @@ the foundation; the build temporarily opts out of Turbopack.
 **Reversal:** Move within patched supported versions after type, test, build and vulnerability gates
 pass. Reverting to an advisory-affected major is prohibited.
 
+### ADR-027 — Astro for the static public site; Next.js for the control room
+
+**Status:** Accepted
+**Decision:** The public product and trust pages are a separate static Astro site under
+`apps/public`. The authenticated control room, API, identity, audit and all business actions stay in
+the Next.js application. The sites deploy as separate projects, with the Astro site on the public
+origin and Next.js on the console origin. A configured `PUBLIC_CONSOLE_URL` links public pages to
+the console sign-in route. They share the canonical design tokens and copy rules, not a runtime or
+session cookie.
+**Why:** The user requested Astro for the public experience. Static pages benefit from Astro's
+HTML-first build, while the existing React and server-side control plane remain together. Astro's
+React integration enables React inside an Astro project; it does not integrate Astro pages into a
+Next.js route tree. Sources: [Astro React integration](https://docs.astro.build/en/guides/integrations-guide/react/)
+and [Astro Vercel deployment](https://docs.astro.build/en/guides/integrations-guide/vercel/).
+**Cost:** Two builds and two deployment origins, plus explicit token and content synchronization.
+The public site must never handle authentication, evidence or business mutations.
+**Reversal:** The public pages can move back to Next.js without changing control-plane APIs or data.
+
 ---
 
 ## Superseded / rejected ideas

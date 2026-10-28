@@ -24,10 +24,10 @@ than filtering a list in the client.
 1. `src/app/globals.css`: the canonical token block from `UI_UX_BRIEF.md` §7.3, dark only; Archivo and
    Space Mono via `next/font`; 4 px radii; no shadows, glow or gradients. Map tokens through
    `@theme inline`; no hex literals in components.
-2. Public pages: `/` (hero, restrained Detect → Hold → Investigate → Decide → Recover → Verify loop,
-   before/after entitlement scenario, *"Open sandbox"*), `/trust` (operating model and the known gaps
-   from `SECURITY.md` §11). At most one adapted Aceternity treatment and one Magic UI animation, both
-   under `components/accent/*`, both reduced-motion safe.
+2. Public pages are owned by the static Astro project in `apps/public` (ADR-027). Verify their
+   product/trust copy, responsive layout, reduced-motion behavior and console sign-in link against
+   `UI_UX_BRIEF.md`; keep known gaps visible. The Next.js implementation in this phase owns only
+   the authenticated console and login flow.
 3. `src/app/(auth)/login/page.tsx` + `src/components/auth/SignInPanel.tsx` per `UI_UX_BRIEF.md`
    §5.1: two-pane layout above 1024 px, one `h1`, `Continue with SSO` as the only production action.
    The email/password block renders only when `AUTH_CREDENTIALS_ENABLED=true` and

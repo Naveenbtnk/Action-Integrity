@@ -57,6 +57,8 @@ export default defineConfig([
   },
   globalIgnores([
     '.next/**',
+    'apps/public/.astro/**',
+    'apps/public/dist/**',
     'node_modules/**',
     'storybook-static/**',
     'src/generated/prisma/**',
