@@ -8,6 +8,7 @@ export default defineConfig({
     },
   },
   test: {
+    include: ['src/test/unit/**/*.test.ts', 'src/test/envelope/**/*.test.ts'],
     environment: 'node',
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,

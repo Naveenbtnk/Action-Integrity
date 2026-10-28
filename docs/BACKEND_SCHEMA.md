@@ -146,6 +146,8 @@ Append-only record of every target write.
 | id, key | text | `key` unique, e.g. `billing.plan_status` |
 | name, sourceKey | text | `sourceKey ∈ billing \| contract \| usage \| support \| account` |
 | fieldPath | text | dotted path inside source records |
+| schemaHash | text | expected adapter projection schema hash |
+| requiredFields | text[] | fields each projected row must include |
 | version | int | incremented on semantic change |
 | semanticDefinition | text | human-readable meaning used by the agent prompt; non-empty selects `semantic-check` over `enum-check` |
 | expectedValues | text[] | declared value set |
@@ -167,6 +169,7 @@ insert time.
 `detectedAt` · `summary` text · `scopeSelector` jsonb (e.g. `{accountIds:[…]}` or
 `{planStatus:["CURRENT"]}`) · `evidenceSnapshotIds` text[] · `status` (`IntegrityEventStatus`) ·
 `fingerprint` **unique** (`sha256(contractId | type | payloadHash)`)
+`dismissedReason`/`dismissedById`/`dismissedAt` are set together on `OPEN → DISMISSED`.
 Index: `(status, detectedAt desc)`, `(severity)`.
 `OPEN → LINKED` when a case is opened against it, `OPEN → DISMISSED` via `/dismiss`; both are terminal
 for evaluation dedupe.
@@ -330,6 +333,7 @@ Canonical `eventType` values (the only ones code may write): `CASE_OPENED`, `GAT
 `BREAK_GLASS_DENIED`, `BREAK_GLASS_USED`, `BREAK_GLASS_EXPIRED`, `BREAK_GLASS_REVOKED`,
 `DEGRADATION_CHANGED`, `USER_ROLE_CHANGED`,
 `KEY_ROTATED`, `JOB_FAILED`.
+`INTEGRITY_DISMISSED` records a human dismissal with a reason hash.
 Index: `(caseId, createdAt)`, `(eventType, createdAt desc)`, `(requestId)`, `(traceId)`.
 Guard: DB trigger raises on `UPDATE` and `DELETE`; Prisma client extension refuses mutation.
 

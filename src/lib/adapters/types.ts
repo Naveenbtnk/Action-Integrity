@@ -1,7 +1,11 @@
 import type { ServiceState, TargetEntitlementStatus } from '@/generated/prisma/enums';
 
 export type SourceKey = 'contract' | 'billing' | 'usage' | 'support' | 'account';
-export type SourceQuery = { accountId: string; limit: number };
+export type SourceQuery = {
+  accountId?: string | undefined;
+  cursor?: string | undefined;
+  limit: number;
+};
 export type SourceRecord = Readonly<Record<string, string | number | null>>;
 export type SourceDescriptor = {
   key: SourceKey;

@@ -67,4 +67,16 @@ jobs:
       - run: npm run test:db -- immutability policy user-roles approval
       - run: npm run test:integration -- adapters failure
       - run: npm run test:integration -- target
+      - run: npm run test:integration -- evaluate dismiss
       - run: npm run build
+      - name: Verify production HTTP routes
+        run: |
+          npm run start > server.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/v1/health > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run test:http
+          npm run test:integrity-http

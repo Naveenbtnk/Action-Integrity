@@ -11,10 +11,11 @@ const redis = env.REDIS_URL
 const memory = new Map<string, { count: number; expires: number }>();
 
 export async function enforceAdapterLimit(
-  group: 'sources' | 'target-read' | 'target-write',
+  group: 'sources' | 'target-read' | 'target-write' | 'integrity' | 'read' | 'write',
   principal: string,
 ): Promise<void> {
-  const limit = group === 'target-write' ? 60 : 300;
+  const limit =
+    group === 'integrity' ? 6 : group === 'target-write' || group === 'write' ? 60 : 300;
   const windowMs = 60_000;
   const bucket = Math.floor(Date.now() / windowMs);
   const key = `aic:limit:${group}:${principal}:${bucket}`;

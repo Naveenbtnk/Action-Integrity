@@ -39,6 +39,7 @@ const fields: Record<SourceKey, Record<string, string>> = {
     recordRef: 'string',
     accountId: 'string',
     subject: 'string',
+    body: 'string',
     status: 'string',
     severity: 'string',
     sourceCreatedAt: 'datetime',
@@ -91,11 +92,14 @@ async function safeRead<T>(work: () => Promise<T>): Promise<T> {
 const adapters: Record<SourceKey, SourceAdapter> = {
   contract: {
     key: 'contract',
-    fetchRecords: ({ accountId, limit }: SourceQuery) =>
+    fetchRecords: ({ accountId, cursor, limit }: SourceQuery) =>
       safeRead(async () =>
         (
           await db.srcContractEntitlement.findMany({
-            where: { accountId },
+            where: {
+              ...(accountId ? { accountId } : {}),
+              ...(cursor ? { recordRef: { gt: cursor } } : {}),
+            },
             orderBy: { recordRef: 'asc' },
             take: limit,
             select: {
@@ -121,11 +125,14 @@ const adapters: Record<SourceKey, SourceAdapter> = {
   },
   billing: {
     key: 'billing',
-    fetchRecords: ({ accountId, limit }: SourceQuery) =>
+    fetchRecords: ({ accountId, cursor, limit }: SourceQuery) =>
       safeRead(async () =>
         (
           await db.srcBillingSubscription.findMany({
-            where: { accountId },
+            where: {
+              ...(accountId ? { accountId } : {}),
+              ...(cursor ? { recordRef: { gt: cursor } } : {}),
+            },
             orderBy: { recordRef: 'asc' },
             take: limit,
             select: {
@@ -153,11 +160,14 @@ const adapters: Record<SourceKey, SourceAdapter> = {
   },
   usage: {
     key: 'usage',
-    fetchRecords: ({ accountId, limit }: SourceQuery) =>
+    fetchRecords: ({ accountId, cursor, limit }: SourceQuery) =>
       safeRead(async () =>
         (
           await db.srcUsageEventDaily.findMany({
-            where: { accountId },
+            where: {
+              ...(accountId ? { accountId } : {}),
+              ...(cursor ? { recordRef: { gt: cursor } } : {}),
+            },
             orderBy: { recordRef: 'asc' },
             take: limit,
             select: {
@@ -179,17 +189,21 @@ const adapters: Record<SourceKey, SourceAdapter> = {
   },
   support: {
     key: 'support',
-    fetchRecords: ({ accountId, limit }: SourceQuery) =>
+    fetchRecords: ({ accountId, cursor, limit }: SourceQuery) =>
       safeRead(async () =>
         (
           await db.srcSupportTicket.findMany({
-            where: { accountId },
+            where: {
+              ...(accountId ? { accountId } : {}),
+              ...(cursor ? { recordRef: { gt: cursor } } : {}),
+            },
             orderBy: { recordRef: 'asc' },
             take: limit,
             select: {
               recordRef: true,
               accountId: true,
               subject: true,
+              body: true,
               status: true,
               severity: true,
               sourceCreatedAt: true,
@@ -201,12 +215,16 @@ const adapters: Record<SourceKey, SourceAdapter> = {
   },
   account: {
     key: 'account',
-    fetchRecords: ({ accountId }: SourceQuery) =>
+    fetchRecords: ({ accountId, cursor, limit }: SourceQuery) =>
       safeRead(async () =>
         (
           await db.srcAccountRegistry.findMany({
-            where: { accountId },
-            take: 1,
+            where: {
+              ...(accountId ? { accountId } : {}),
+              ...(cursor ? { accountId: { gt: cursor } } : {}),
+            },
+            orderBy: { accountId: 'asc' },
+            take: limit,
             select: {
               accountId: true,
               name: true,

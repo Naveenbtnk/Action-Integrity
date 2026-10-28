@@ -68,14 +68,15 @@ one is incomplete.
 ## 3. Module contracts
 
 ### `lib/integrity/`
-- `evaluateContracts(contractIds?) → IntegrityEvent[]`
+- `evaluateChecks(input) → CheckResult[]` is pure; `lib/integrity-runner/evaluate.ts` owns
+  adapter reads and per-contract snapshot/event transactions.
 - Checks: `schema-check` (contract schema hash + required fields), `enum-check` (declared value set
   vs observed distinct values, for contracts without a `semanticDefinition`), `semantic-check`
   (observed values vs `expectedValues` ∪ equivalent aliases, for contracts with a
   `semanticDefinition` — at most one value-check event per contract), `freshness-check` (age vs
   `freshnessSlaSeconds`), `cross-source-check` (declared invariant between two sources, e.g. billing
   status ⟺ entitlement status).
-- Output is one event per violated contract with `evidenceSnapshotIds[]` and a machine-readable
+- Output is one event per violated check type and contract with `evidenceSnapshotIds[]` and a machine-readable
   `scopeSelector` (JSON) used by the ExposureAnalyzer.
 - Pure functions over snapshots. Idempotent per `(contractId, snapshotId, checkType)`.
 

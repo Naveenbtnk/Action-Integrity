@@ -11,6 +11,7 @@ import { setFailureMode } from '@/lib/adapters/test-hooks';
 import type { SourceKey } from '@/lib/adapters/types';
 import { db } from '@/lib/db';
 import * as target from '@/lib/target/service';
+import { runIntegrityTests } from '@/test/integration/integrity.test';
 
 const requested = new Set(process.argv.slice(2));
 const shouldRun = (name: string) => requested.size === 0 || requested.has(name);
@@ -28,6 +29,8 @@ async function files(root: string): Promise<string[]> {
 }
 
 async function run(): Promise<void> {
+  if (requested.has('evaluate') || requested.has('dismiss') || requested.has('evaluate-all'))
+    await runIntegrityTests(requested);
   if (shouldRun('adapters')) {
     for (const key of keys) {
       const source = getSource(key);
@@ -124,6 +127,12 @@ async function run(): Promise<void> {
   );
   for (const file of codeFiles) {
     const source = await readFile(file, 'utf8');
+    if (file.includes(`${path.sep}lib${path.sep}integrity${path.sep}`)) {
+      assert.ok(
+        !/from ['"]@\/lib\/(db|agent|adapters)(?:\/|['"])/.test(source),
+        `pure integrity import violation: ${file}`,
+      );
+    }
     if (
       /\.tgt(?:Account|Entitlement|ServiceStatus|Audit)\.(?:create|createMany|update|updateMany|delete|deleteMany|upsert)\b/.test(
         source,

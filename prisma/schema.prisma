@@ -262,6 +262,7 @@ model User {
   requestedElevations BreakGlassElevation[] @relation("ElevationRequester")
   cosignedElevations  BreakGlassElevation[] @relation("ElevationCosigner")
   scenarioRuns        ScenarioRun[]
+  dismissedIntegrityEvents IntegrityEvent[] @relation("IntegrityDismissal")
 
   @@map("user")
 }
@@ -403,6 +404,8 @@ model DataContract {
   name                String
   sourceKey           String   @map("source_key")
   fieldPath           String   @map("field_path")
+  schemaHash          String   @map("schema_hash")
+  requiredFields      String[] @map("required_fields")
   version             Int
   semanticDefinition  String   @map("semantic_definition")
   expectedValues      String[] @map("expected_values")
@@ -447,8 +450,12 @@ model IntegrityEvent {
   evidenceSnapshotIds String[]             @map("evidence_snapshot_ids")
   status              IntegrityEventStatus
   fingerprint         String               @unique
+  dismissedReason     String?              @map("dismissed_reason")
+  dismissedById       String?              @map("dismissed_by_id")
+  dismissedAt         DateTime?            @map("dismissed_at") @db.Timestamptz(6)
 
   contract DataContract     @relation(fields: [contractId], references: [id])
+  dismissedBy User?         @relation("IntegrityDismissal", fields: [dismissedById], references: [id])
   actions  OutboundAction[]
   cases    Case[]
 

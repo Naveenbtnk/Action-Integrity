@@ -16,6 +16,7 @@
     "test:unit": "vitest run src/test/unit src/test/envelope",
     "test:integration": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/integration/systems.test.ts",
     "test:http": "node --env-file-if-exists=.env --import tsx src/test/integration/http-smoke.test.ts",
+    "test:integrity-http": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/integration/integrity-http.test.ts",
     "test:db": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/db/integrity.test.ts",
     "test:rbac": "tsx scripts/not-implemented.ts 'Phase 6 implements RBAC tests'",
     "test:envelope": "vitest run src/test/envelope",

@@ -23,7 +23,8 @@ import `lib/db` (the caller persists), `lib/agent`, or any adapter — add the s
      with `semanticDefinition` ⇒ `SEMANTIC`. This is the check that catches `CURRENT`.
    - `freshness-check.ts` — `capturedAt - sourceUpdatedAt > freshnessSlaSeconds` ⇒ `FRESHNESS`.
    - `cross-source-check.ts` — a declared `DataContract.invariants` rule fails ⇒ `CROSS_SOURCE`.
-3. `src/lib/integrity/evaluate.ts`:
+3. `src/lib/integrity/evaluate.ts` runs the pure checks. `src/lib/integrity-runner/evaluate.ts`
+   handles source reads and persistence:
    ```
    evaluateContracts(keys?) →
      for each ACTIVE contract: capture SourceSnapshot (hash payloads) →
@@ -62,7 +63,7 @@ import `lib/db` (the caller persists), `lib/agent`, or any adapter — add the s
 ```bash
 npm run test:unit -- integrity
 npm run test:integration -- evaluate dismiss
-curl -s -X POST -H "x-agent-key: $AGENT_SERVICE_KEY" -H 'content-type: application/json' \
+curl -s -X POST -H "x-agent-key: $AGENT_SERVICE_KEY" -H 'Idempotency-Key: phase3-check-001' -H 'content-type: application/json' \
   -d '{"contractKeys":["billing.plan_status"]}' localhost:3000/api/v1/integrity/evaluate | jq
 ```
 
