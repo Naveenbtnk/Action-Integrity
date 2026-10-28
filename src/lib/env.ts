@@ -35,7 +35,6 @@ const EnvironmentSchema = z.object({
   AIC_BASE_URL: z.string().url('AIC_BASE_URL must be an absolute URL'),
   INVESTIGATION_MODE: z.enum(['agent', 'deterministic']),
   POLICY_DIR: z.string().default('config/policy'),
-  POLICY_VERSION: z.string().default('2026.10.1'),
   APPROVAL_WINDOW_HOURS: PositiveInteger(12),
   HOLD_SLA_HOURS: PositiveInteger(4),
   RATE_LIMIT_INGEST_PER_MIN: PositiveInteger(120),

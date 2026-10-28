@@ -41,6 +41,7 @@ export async function investigate(
             CaseStatus.HOLDING,
             CaseStatus.INVESTIGATING,
             CaseStatus.AWAITING_EVIDENCE,
+            CaseStatus.AWAITING_APPROVAL,
           ] as CaseStatus[]
         ).includes(caseRow.status)
       ) {
@@ -111,7 +112,8 @@ export async function investigate(
         };
         if (
           current.status === CaseStatus.HOLDING ||
-          current.status === CaseStatus.AWAITING_EVIDENCE
+          current.status === CaseStatus.AWAITING_EVIDENCE ||
+          current.status === CaseStatus.AWAITING_APPROVAL
         ) {
           await transitionCase(tx, caseId, CaseStatus.INVESTIGATING, transitionActor);
         }
@@ -149,6 +151,20 @@ export async function investigate(
           },
           include: { hypotheses: true },
         });
+        const superseded = await tx.approval.updateMany({
+          where: { caseId, status: 'VALID' },
+          data: { status: 'SUPERSEDED' },
+        });
+        if (superseded.count)
+          await appendAuditEvent(tx, {
+            eventType: 'APPROVAL_SUPERSEDED',
+            actorType: ActorType.USER,
+            actorId: actor.id,
+            caseId,
+            payload: { reason: 'REPORT_REPLACED', reportId: report.id, count: superseded.count },
+            requestId: actor.requestId,
+            traceId: actor.traceId,
+          });
         await appendAuditEvent(tx, {
           eventType: 'INVESTIGATION_COMPLETED',
           actorType: ActorType.USER,

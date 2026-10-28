@@ -4,7 +4,7 @@ import { DegradationLevel } from '@/generated/prisma/enums';
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
 import { withRoute } from '@/lib/http';
-import { readPolicyHash } from '@/lib/policy-file';
+import { verifiedPolicy } from '@/lib/policy/config';
 
 async function readDegradation(): Promise<DegradationLevel> {
   const table = await db.$queryRaw<Array<{ present: string | null }>>`
@@ -17,16 +17,29 @@ async function readDegradation(): Promise<DegradationLevel> {
 
 export const GET = withRoute(async () => {
   let database: 'ok' | 'unavailable' = 'ok';
+  let policy: { version: string; hash: string } | null = null;
+  let policyVerified = false;
   let degradation: DegradationLevel = DegradationLevel.L0_NORMAL;
 
   try {
     await db.$queryRaw`SELECT 1`;
     degradation = await readDegradation();
+    const active = await db.policyVersion.findFirst({ where: { status: 'ACTIVE' } });
+    if (active) {
+      policy = { version: active.version, hash: active.hash };
+      try {
+        await verifiedPolicy(active);
+        policyVerified = true;
+      } catch {
+        policyVerified = false;
+      }
+    }
   } catch {
     database = 'unavailable';
   }
 
-  const failing = database !== 'ok' || degradation === DegradationLevel.L4_AUDIT_BROKEN;
+  const failing =
+    database !== 'ok' || !policyVerified || degradation === DegradationLevel.L4_AUDIT_BROKEN;
   const degraded = degradation !== DegradationLevel.L0_NORMAL;
   return NextResponse.json(
     {
@@ -34,8 +47,9 @@ export const GET = withRoute(async () => {
       db: database,
       mode: env.INVESTIGATION_MODE.toUpperCase(),
       degradation,
-      policyVersion: env.POLICY_VERSION,
-      policyHash: await readPolicyHash(),
+      policyVersion: policy?.version ?? null,
+      policyHash: policy?.hash ?? null,
+      policyVerified,
       commit: env.GIT_SHA,
       checkedAt: new Date().toISOString(),
     },

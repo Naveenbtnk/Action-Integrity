@@ -1,0 +1,43 @@
+{
+  "version": "2026.10.2",
+  "exposureWindowHours": 24,
+  "evidenceCompletenessMinimum": 0.8,
+  "confidenceMinimum": 0.7,
+  "riskBands": {
+    "approvalRequired": 40,
+    "highRisk": 70
+  },
+  "quorum": {
+    "highRiskApprovals": 2,
+    "exposureThreshold": 250,
+    "approvalWindowHours": 12
+  },
+  "valueThresholdsMinor": {
+    "mandatoryApproval": 2500000
+  },
+  "irreversibleActionTypes": ["ACCOUNT_STATUS_CHANGE"],
+  "allowedDispositions": {
+    "ENTITLEMENT_REVOKE": [
+      "BLOCK",
+      "HOLD_FOR_EVIDENCE",
+      "RELEASE_AFTER_CORRECTION",
+      "COMPENSATE",
+      "ESCALATE",
+      "SAFE_REFUSAL"
+    ],
+    "ENTITLEMENT_GRANT": [
+      "BLOCK",
+      "HOLD_FOR_EVIDENCE",
+      "RELEASE_AFTER_CORRECTION",
+      "ESCALATE",
+      "SAFE_REFUSAL"
+    ],
+    "ACCOUNT_STATUS_CHANGE": [
+      "BLOCK",
+      "HOLD_FOR_EVIDENCE",
+      "COMPENSATE",
+      "ESCALATE",
+      "SAFE_REFUSAL"
+    ]
+  }
+}

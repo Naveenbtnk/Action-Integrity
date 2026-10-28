@@ -56,7 +56,7 @@ target writes, or full autonomy.
 | `docs/EVALUATION.md`           | Functional + adversarial suites, tiers, metrics, baseline                     |
 | `docs/SECURITY.md`             | Threat model, controls, agent security, known gaps                            |
 | `docs/CODE_STYLE.md`           | Conventions and testing rules                                                 |
-| `docs/DECISIONS.md`            | ADRs 001–026 and rejected ideas                                               |
+| `docs/DECISIONS.md`            | ADRs 001–028 and rejected ideas                                               |
 | `docs/IMPLEMENTATION_PLAN.md`  | Phases with done criteria                                                     |
 | `docs/DEMO_SCRIPT.md`          | Timed walkthrough with a fallback line per beat (Phase 13)                    |
 | `docs/prompts/`                | One copy-paste prompt per phase                                               |
@@ -64,9 +64,9 @@ target writes, or full autonomy.
 
 ## Quickstart
 
-> Phases 0–3 are implemented: the application shell, health contract, full database schema,
-> migration guards, synthetic seed, five read-only sources, the idempotent target API and deterministic integrity detection are available. Business workflows and deployment readiness
-> arrive in later phases and must be implemented in `docs/prompts/` order.
+> Phases 0–6 are implemented: deterministic detection and hold, read-only investigation,
+> versioned policy, quorum approval, RBAC and break-glass APIs. Execution, verification and
+> deployment readiness remain in later phases of `docs/prompts/`.
 
 ```bash
 # prerequisites: Node 24 and Docker
@@ -76,14 +76,15 @@ docker compose up -d db redis  # host ports 15432 and 16379
 npm install
 npx prisma migrate deploy
 npm run seed                  # prints local credentials once
+npm run policy:hash           # canonical hash for draft policy 2026.10.2
 npm run dev                   # http://localhost:3000
 ```
 
-The health endpoint reports `503` when PostgreSQL is unavailable. Business workflows are not exposed
-until later phases.
-
-Local credentials and the rate limiter are wired in later phases. Production requires OIDC, shared
-rate limiting and telemetry.
+The seed preserves the historical `2026.10.1` placeholder as active and registers `2026.10.2`
+as a draft. An authenticated `ADMIN` must call `POST /api/v1/admin/policy/activate` with its
+version, hash, review ticket (`SEED-BASELINE` locally) and an `Idempotency-Key` before policy
+evaluation becomes available. `/api/v1/health` reports `503` until the active policy verifies.
+Production requires OIDC, shared rate limiting, telemetry, and the later readiness gates.
 
 Seeded users (development only):
 

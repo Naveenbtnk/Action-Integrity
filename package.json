@@ -22,7 +22,7 @@
     "test:phase4-http": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/integration/phase4-http.test.ts",
     "test:phase5-http": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/integration/phase5-http.test.ts",
     "test:db": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/db/integrity.test.ts",
-    "test:rbac": "tsx scripts/not-implemented.ts 'Phase 6 implements RBAC tests'",
+    "test:rbac": "node --conditions=react-server --env-file-if-exists=.env --import tsx src/test/integration/rbac.test.ts",
     "test:envelope": "vitest run src/test/envelope",
     "test:failure": "tsx scripts/not-implemented.ts 'Phase 12 implements failure tests'",
     "test:adversarial": "tsx scripts/not-implemented.ts 'Phase 9 implements adversarial tests'",

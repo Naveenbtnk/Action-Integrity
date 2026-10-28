@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: { '/*': ['./config/policy/*.json'] },
   serverExternalPackages: [
     '@opentelemetry/exporter-trace-otlp-http',
     '@opentelemetry/sdk-node',

@@ -17,6 +17,8 @@ export async function appendAuditEvent(
     payload: Prisma.InputJsonValue;
     requestId: string;
     traceId?: string | undefined;
+    policyVersion?: string | undefined;
+    policyHash?: string | undefined;
   },
 ): Promise<void> {
   const degradation = await tx.degradationState.findFirst({
@@ -57,6 +59,8 @@ export async function appendAuditEvent(
       payload: input.payload,
       requestId: input.requestId,
       traceId: input.traceId ?? null,
+      policyVersion: input.policyVersion ?? null,
+      policyHash: input.policyHash ?? null,
       prevHash: previous?.hash ?? null,
       hash,
       createdAt,

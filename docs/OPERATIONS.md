@@ -87,8 +87,9 @@ Required, in order, and all blocking:
 
 - **Application:** redeploy the previous image. Safe because migrations are expand-only and the
   previous version ignores new nullable columns.
-- **Policy:** `POST /admin/policy/activate` with the previous version's hash. This supersedes open
-  approvals (by design) and returns cases to `AWAITING_APPROVAL`.
+- **Policy:** register the previous rules as a new reviewed `DRAFT` version, then activate that new
+  version with its hash and review ticket. Retired policy documents remain immutable. Activation
+  supersedes open approvals and returns approved cases to `AWAITING_APPROVAL`.
 - **Schema:** no down-migrations. A destructive change requires an incident, a PITR restore (R-12) and
   an incident commander decision. Never "fix forward" a data-loss migration on production.
 - **Feature that cannot be disabled:** if a release cannot be rolled back within 15 minutes, it does
@@ -206,10 +207,11 @@ Each runbook follows the same shape: **S**ymptoms → **I**mmediate → **D**iag
 
 - **S:** `PolicyHashMismatch`, `POLICY_STALE` at execute, approvals suddenly superseded.
 - **I:** Stop activating. Existing approvals remain valid only for the hash they bound.
-- **D:** `GET /admin/policy` — compare active version/hash with `config/policy.json` and the deploy
+- **D:** `GET /admin/policy` — compare active version/hash with `config/policy/<version>.json` and the deploy
   log. Confirm the activation was intended and reviewed.
-- **R:** Activate the intended version (requires a review ticket id and `ADMIN`). Cases return to
-  `AWAITING_APPROVAL`; notify reviewers. If the wrong version is live, roll back by hash (R-07 again).
+- **R:** Activate the intended `DRAFT` version (requires a review ticket id and `ADMIN`). Cases return to
+  `AWAITING_APPROVAL`; notify reviewers. If the wrong version is live, register the correct rules as
+  a new reviewed version and activate it.
 - **V:** `/health.policyHash` matches the intended version; `aic_policy_stale_rejections_total` stops;
   open cases have fresh approvals.
 

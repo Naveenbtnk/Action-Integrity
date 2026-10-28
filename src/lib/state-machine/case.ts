@@ -12,7 +12,7 @@ export const TRANSITIONS: Record<CaseStatus, readonly CaseStatus[]> = {
   HOLDING: ['INVESTIGATING', 'AWAITING_APPROVAL', 'ESCALATED'],
   INVESTIGATING: ['AWAITING_EVIDENCE', 'AWAITING_APPROVAL', 'ESCALATED'],
   AWAITING_EVIDENCE: ['INVESTIGATING', 'AWAITING_APPROVAL', 'ESCALATED'],
-  AWAITING_APPROVAL: ['APPROVED', 'REJECTED', 'SAFE_REFUSAL', 'ESCALATED'],
+  AWAITING_APPROVAL: ['INVESTIGATING', 'APPROVED', 'REJECTED', 'SAFE_REFUSAL', 'ESCALATED'],
   APPROVED: ['EXECUTING', 'VERIFYING', 'AWAITING_APPROVAL', 'SAFE_REFUSAL', 'ESCALATED'],
   EXECUTING: ['VERIFYING', 'SAFE_REFUSAL'],
   VERIFYING: ['CLOSED_RESOLVED', 'REOPENED', 'ESCALATED'],
@@ -51,16 +51,33 @@ export async function transitionCase(
     });
     if (!decision) throw new QuorumNotMetError();
     const valid = await tx.approval.findMany({
-      where: { caseId, status: 'VALID', expiresAt: { gt: new Date() } },
+      where: {
+        caseId,
+        reopenCount: current.reopenCount,
+        status: 'VALID',
+        decision: 'APPROVE',
+        expiresAt: { gt: new Date() },
+      },
       include: { reviewer: { select: { roles: true } } },
     });
-    const distinct = new Set(valid.map((approval) => approval.reviewerId));
+    const bound = valid.filter(
+      (approval) =>
+        approval.boundEvidenceHash === decision.evidenceHash &&
+        approval.boundPolicyHash === decision.policyHash &&
+        approval.boundReportId === decision.reportId &&
+        approval.disposition === decision.disposition,
+    );
+    const distinct = new Set(bound.map((approval) => approval.reviewerId));
     const requiredRoles = decision.requiredRoles;
     if (
       distinct.size < decision.requiredApprovals ||
       requiredRoles.some(
         (role) =>
-          !valid.some((approval) => approval.reviewer.roles.some((value) => value === role)),
+          !bound.some(
+            (approval) =>
+              approval.reviewer.roles.some((value) => value === role) ||
+              (role === 'SENIOR_REVIEWER' && approval.breakGlass),
+          ),
       )
     ) {
       throw new QuorumNotMetError();

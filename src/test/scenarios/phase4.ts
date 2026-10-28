@@ -3,15 +3,22 @@ import 'dotenv/config';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 
+import type { Prisma } from '@/generated/prisma/client';
 import { GateDecision, IntegrityEventType, OutboundActionType } from '@/generated/prisma/enums';
+import { addEvidence } from '@/lib/agent/evidence-write';
+import { investigate } from '@/lib/agent/investigator';
 import { db } from '@/lib/db';
 import { ingestAction } from '@/lib/gate/ingest';
 import { withIdempotency } from '@/lib/idempotency';
 import { evaluateContracts } from '@/lib/integrity-runner/evaluate';
+import { evaluateAndPersist } from '@/lib/policy/persist';
 
 const options = new Set(process.argv.slice(2));
-if (!options.has('--scenario=A') || !options.has('--upto=ingest')) {
-  throw new Error('Only --scenario=A --upto=ingest is implemented in Phase 4.');
+if (
+  !options.has('--scenario=A') ||
+  (!options.has('--upto=ingest') && !options.has('--upto=policy'))
+) {
+  throw new Error('Supported scenario: --scenario=A --upto=ingest|policy.');
 }
 
 const accountId = `acc_${String(1000 + Math.floor(Math.random() * 4000)).padStart(5, '0')}`;
@@ -64,7 +71,58 @@ try {
     await db.actionHold.count({ where: { outboundAction: { idempotencyKey: key } } }),
     1,
   );
-  process.stdout.write('Scenario A through ingest: passed\n');
+  if (options.has('--upto=policy')) {
+    const caseRef = first.data.gate.caseRef;
+    assert.ok(caseRef);
+    const caseRow = await db.case.findUniqueOrThrow({ where: { ref: caseRef } });
+    const analyst = await db.user.findUniqueOrThrow({ where: { email: 'analyst@aic.local' } });
+    const actor = { id: analyst.id, requestId: `scenario_${randomUUID()}` };
+    const initial = await investigate(caseRow.id, actor);
+    assert.equal(initial.report.recommendedDisposition, 'BLOCK');
+    await db.$transaction((tx) =>
+      addEvidence(
+        tx as Prisma.TransactionClient,
+        caseRef,
+        {
+          kind: 'OWNER_CONFIRMATION',
+          sourceKey: 'contract-owner',
+          recordRef: `owner:${randomUUID()}`,
+          excerpt: 'Contract owner confirms the current entitlement must remain active.',
+          stance: 'SUPPORTS',
+        },
+        actor,
+      ),
+    );
+    const revised = await investigate(caseRow.id, actor);
+    assert.equal(revised.report.missingEvidence.length, 0);
+    const decision = await db.$transaction((tx) =>
+      evaluateAndPersist(tx as Prisma.TransactionClient, caseRef, actor),
+    );
+    assert.equal(decision.disposition, 'BLOCK');
+    assert.equal(decision.requiredApprovals, 1);
+    await db.$transaction((tx) =>
+      addEvidence(
+        tx as Prisma.TransactionClient,
+        caseRef,
+        {
+          kind: 'OWNER_CONFIRMATION',
+          sourceKey: 'contract-owner',
+          recordRef: `owner:${randomUUID()}`,
+          excerpt: 'A second owner reconfirms the entitlement remains active.',
+          stance: 'SUPPORTS',
+        },
+        actor,
+      ),
+    );
+    const refreshed = await investigate(caseRow.id, actor);
+    assert.notEqual(refreshed.report.id, revised.report.id);
+    const refreshedDecision = await db.$transaction((tx) =>
+      evaluateAndPersist(tx as Prisma.TransactionClient, caseRef, actor),
+    );
+    assert.equal(refreshedDecision.disposition, 'BLOCK');
+    assert.equal(await db.tgtAudit.count(), targetBefore);
+    process.stdout.write('Scenario A through policy: passed\n');
+  } else process.stdout.write('Scenario A through ingest: passed\n');
 } finally {
   await db.srcBillingSubscription.update({
     where: { id: billing.id },

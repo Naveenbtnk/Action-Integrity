@@ -133,7 +133,7 @@ performs it; `Verifier` proves it.
 | `AIC_BASE_URL`                                                                                          | yes      | server     | Absolute base for the target adapter's `/api/v1/target/*` calls               |
 | `INVESTIGATION_MODE`                                                                                    | yes      | server     | `agent` \| `deterministic`                                                    |
 | `POLICY_DIR`                                                                                            | no       | server     | Default `config/policy`; each `<version>.json` is immutable                   |
-| `POLICY_VERSION`                                                                                        | no       | server     | Bootstrap only: used by `seed` to create the first active version             |
+| `POLICY_VERSION`                                                                                        | no       | CLI        | Selects the file for `npm run policy:hash`; runtime uses the active database row |
 | `APPROVAL_WINDOW_HOURS`                                                                                 | no       | server     | Default 12                                                                    |
 | `HOLD_SLA_HOURS`                                                                                        | no       | server     | Default 4; reconcile escalates beyond it                                      |
 | `RATE_LIMIT_INGEST_PER_MIN`                                                                             | no       | server     | Default 120                                                                   |

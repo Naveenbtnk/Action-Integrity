@@ -203,7 +203,8 @@ never sets a disposition itself.
 the latest report and the **active** `PolicyVersion`, binding `policyHash`, `evidenceHash`,
 `requiredApprovals` and `requiredRoles`. → `{ riskScore, riskBand, disposition, allowedDispositions,
 approvalRequired, requiredApprovals, requiredRoles, approvalExpiresAt, policyVersion, policyHash }`.
-422 `EVIDENCE_INCOMPLETE` when completeness < threshold and the disposition would allow action.
+Incomplete evidence yields `HOLD_FOR_EVIDENCE` and removes write dispositions; attempting a write
+approval then returns 422.
 409 `POLICY_UNAVAILABLE` when no policy version is active.
 
 **`POST /cases/:ref/approve`** — `case:approve`; high-risk also requires `case:approve_high`. Body
@@ -265,10 +266,10 @@ approvals, writes `POLICY_ACTIVATED`, and enqueues an outbox event.
 
 **`POST /admin/break-glass`** — `break_glass:request`. Body
 `{ caseRef, reason (≥50 chars), ttlMinutes ≤ 60 }`. → 201 elevation in `PENDING_COSIGN`.
-**`GET /admin/break-glass?status=&caseRef=&cursor=&limit=`** — `break_glass:request` or `AUDITOR`.
+**`GET /admin/break-glass?status=&caseRef=&cursor=&limit=`** — `break_glass:read` (`ADMIN` or `AUDITOR`).
 Register for `/app/settings/approvals`; projections carry no reason text beyond the requester's
 audited case.
-**`GET /admin/break-glass/:id`** — `break_glass:request` or `AUDITOR`.
+**`GET /admin/break-glass/:id`** — `break_glass:read` (`ADMIN` or `AUDITOR`).
 **`POST /admin/break-glass/:id/cosign`** — `break_glass:cosign`, must be a different admin. Creates a
 `breakGlass` approval and moves the elevation to `ACTIVE`. It counts as **one** approval and, on a
 high-risk case, fills the `SENIOR_REVIEWER` slot only; a distinct reviewer approval is still required.

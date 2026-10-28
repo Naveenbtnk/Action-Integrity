@@ -264,7 +264,7 @@ may set `Case.status`.
 | `HOLDING` | `INVESTIGATING`, `AWAITING_APPROVAL`, `ESCALATED` | `POST /investigate` / deterministic report only / `POST /escalate` |
 | `INVESTIGATING` | `AWAITING_EVIDENCE`, `AWAITING_APPROVAL`, `ESCALATED` | report has missing evidence / report is decision-ready / escalate |
 | `AWAITING_EVIDENCE` | `INVESTIGATING`, `AWAITING_APPROVAL`, `ESCALATED` | new evidence / completeness met / SLA deadline |
-| `AWAITING_APPROVAL` | `APPROVED`, `REJECTED`, `SAFE_REFUSAL`, `ESCALATED` | quorum met / reject / policy allows no action / escalate |
+| `AWAITING_APPROVAL` | `INVESTIGATING`, `APPROVED`, `REJECTED`, `SAFE_REFUSAL`, `ESCALATED` | evidence changed or report rerun / quorum met / reject / policy allows no action / escalate |
 | `APPROVED` | `EXECUTING`, `VERIFYING`, `AWAITING_APPROVAL`, `SAFE_REFUSAL`, `ESCALATED` | execute write / execute `BLOCK` / approvals invalidated by evidence or policy / `NO_RESTORE_POINT` or missing precondition / escalate |
 | `EXECUTING` | `VERIFYING`, `SAFE_REFUSAL` | execution recorded (incl. `UNKNOWN`) / precondition failed mid-flight |
 | `VERIFYING` | `CLOSED_RESOLVED`, `REOPENED`, `ESCALATED` | verification passed / passed=false / inconclusive after retry |

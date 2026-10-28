@@ -83,6 +83,7 @@ Service principals cannot hold console sessions; console sessions cannot call `/
 | `audit:verify` | write | Run chain verification over a range |
 | `break_glass:request` | privileged | Open an incident elevation |
 | `break_glass:cosign` | privileged | Co-sign someone else's elevation |
+| `break_glass:read` | read | View emergency access records; ADMIN and AUDITOR only |
 | `service:ingest` | service | `POST /actions/ingest` |
 | `service:evaluate` | service | `POST /integrity/evaluate` |
 | `service:source_read` | service | `/sources/*` |
@@ -127,6 +128,7 @@ Service principals cannot hold console sessions; console sessions cannot call `/
 | `audit:verify` | — | — | — | — | ✓ | ✓ |
 | `break_glass:request` | — | — | — | — | ✓ | — |
 | `break_glass:cosign` | — | — | — | — | ✓ | — |
+| `break_glass:read` | — | — | — | — | ✓ | ✓ |
 
 Service permissions are held only by service principals and are never granted to a human role.
 

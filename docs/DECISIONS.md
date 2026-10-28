@@ -334,6 +334,22 @@ The public site must never handle authentication, evidence or business mutations
 
 ---
 
+### ADR-028 — Preserve immutable policy history and gate the Phase 6 policy
+
+**Status:** Accepted
+**Decision:** Keep the Phase 0 `2026.10.1` policy document and hash immutable. Introduce the
+normative Phase 6 rules as canonical JSON version `2026.10.2`, seeded as `DRAFT`. An administrator
+activates it with its registered hash and review ticket; the transaction retires the previous
+version, invalidates open-case approvals, and records audit and outbox events. Policy evaluation
+fails closed while a placeholder or unverified policy is active. The health endpoint reports the
+active database version and its verification state.
+**Why:** The database forbids changes to a policy document or hash. Replacing `2026.10.1` in place
+would erase the meaning of earlier decisions and violate that control.
+**Cost:** A new deployment needs an explicit policy activation before policy evaluation is usable.
+**Reversal:** A later reviewed version can be activated; historical versions stay immutable.
+
+---
+
 ## Superseded / rejected ideas
 
 | Idea                                               | Why rejected                                                                                                                                 |

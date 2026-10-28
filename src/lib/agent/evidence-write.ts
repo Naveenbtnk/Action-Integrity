@@ -35,7 +35,13 @@ export async function addEvidence(
   if (!caseRow) throw new NotFoundError('Case not found.');
   if (
     !(
-      [CaseStatus.HOLDING, CaseStatus.INVESTIGATING, CaseStatus.AWAITING_EVIDENCE] as CaseStatus[]
+      [
+        CaseStatus.HOLDING,
+        CaseStatus.INVESTIGATING,
+        CaseStatus.AWAITING_EVIDENCE,
+        CaseStatus.AWAITING_APPROVAL,
+        CaseStatus.APPROVED,
+      ] as CaseStatus[]
     ).includes(caseRow.status)
   )
     throw new AppError('INVALID_TRANSITION', 409, 'Evidence cannot be added to this case.');
@@ -60,7 +66,30 @@ export async function addEvidence(
     requestId: actor.requestId,
     traceId: actor.traceId,
   });
+  const superseded = await tx.approval.updateMany({
+    where: { caseId: caseRow.id, status: 'VALID' },
+    data: { status: 'SUPERSEDED' },
+  });
+  if (superseded.count)
+    await appendAuditEvent(tx, {
+      eventType: 'APPROVAL_SUPERSEDED',
+      actorType: ActorType.USER,
+      actorId: actor.id,
+      caseId: caseRow.id,
+      payload: { reason: 'EVIDENCE_ADDED', evidenceId: evidence.id, count: superseded.count },
+      requestId: actor.requestId,
+      traceId: actor.traceId,
+    });
   let status = caseRow.status;
+  if (status === CaseStatus.APPROVED) {
+    status = CaseStatus.AWAITING_APPROVAL;
+    await transitionCase(tx, caseRow.id, status, {
+      type: ActorType.USER,
+      id: actor.id,
+      requestId: actor.requestId,
+      ...(actor.traceId ? { traceId: actor.traceId } : {}),
+    });
+  }
   if (status === CaseStatus.AWAITING_EVIDENCE) {
     const latest = caseRow.reports[0];
     const satisfies = !!latest?.missingEvidence.length || input.stance === 'CONTRADICTS';

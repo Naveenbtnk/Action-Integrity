@@ -1,7 +1,15 @@
 import 'server-only';
 
+import { metrics } from '@opentelemetry/api';
+
+import type { Prisma } from '@/generated/prisma/client';
+import { ActorType } from '@/generated/prisma/enums';
 import { Role } from '@/generated/prisma/enums';
+import { appendAuditEvent } from '@/lib/audit/append';
+import { db } from '@/lib/db';
 import { ForbiddenError } from '@/lib/errors';
+
+const deniedCounter = metrics.getMeter('aic-web').createCounter('aic_authz_denied_total');
 
 export const ROLES = Role;
 export const PERMISSIONS = [
@@ -37,6 +45,7 @@ export const PERMISSIONS = [
   'audit:verify',
   'break_glass:request',
   'break_glass:cosign',
+  'break_glass:read',
   'service:ingest',
   'service:evaluate',
   'service:source_read',
@@ -88,8 +97,9 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     'audit:verify',
     'break_glass:request',
     'break_glass:cosign',
+    'break_glass:read',
   ],
-  AUDITOR: [...READ_COMMON, ...ADMIN_READS, 'audit:verify'],
+  AUDITOR: [...READ_COMMON, ...ADMIN_READS, 'audit:verify', 'break_glass:read'],
 };
 export const SERVICE_PERMISSIONS = {
   SERVICE_AGENT: ['service:ingest', 'service:evaluate', 'service:source_read'],
@@ -105,6 +115,33 @@ export function requirePermission(principal: Principal, permission: Permission):
       ? (SERVICE_PERMISSIONS[principal.service] as readonly Permission[]).includes(permission)
       : principal.roles.some((role) => ROLE_PERMISSIONS[role].includes(permission));
   if (!granted) throw new ForbiddenError();
+}
+
+export async function requireHumanPermission(
+  principal: { id: string; roles: Role[] },
+  permission: Permission,
+  requestId: string,
+  traceId?: string,
+): Promise<void> {
+  try {
+    requirePermission(principal, permission);
+  } catch (error) {
+    if (!(error instanceof ForbiddenError)) throw error;
+    if (!permission.endsWith(':read')) {
+      await db.$transaction(async (tx) => {
+        await appendAuditEvent(tx as Prisma.TransactionClient, {
+          eventType: 'AUTHZ_DENIED',
+          actorType: ActorType.USER,
+          actorId: principal.id,
+          payload: { permission },
+          requestId,
+          traceId,
+        });
+      });
+      deniedCounter.add(1, { permission });
+    }
+    throw error;
+  }
 }
 
 export const ROUTE_PERMISSIONS: ReadonlyArray<{
@@ -182,6 +219,67 @@ export const ROUTE_PERMISSIONS: ReadonlyArray<{
     method: 'POST',
     pattern: '/api/v1/cases/:ref/evidence-requests',
     permission: 'case:request_evidence',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/policy',
+    permission: 'case:compute_policy',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/approve',
+    permission: 'case:approve',
+    rateLimit: 'write',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/cases/:ref/approvals',
+    permission: 'case:read',
+    rateLimit: 'read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/escalate',
+    permission: 'case:escalate',
+    rateLimit: 'write',
+  },
+  { method: 'GET', pattern: '/api/v1/admin/policy', permission: 'policy:read', rateLimit: 'read' },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/policy/activate',
+    permission: 'policy:activate',
+    rateLimit: 'write',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/break-glass',
+    permission: 'break_glass:read',
+    rateLimit: 'read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/break-glass',
+    permission: 'break_glass:request',
+    rateLimit: 'write',
+  },
+  {
+    method: 'GET',
+    pattern: '/api/v1/admin/break-glass/:id',
+    permission: 'break_glass:read',
+    rateLimit: 'read',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/break-glass/:id/cosign',
+    permission: 'break_glass:cosign',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/admin/break-glass/:id/revoke',
+    permission: 'break_glass:request',
     rateLimit: 'write',
   },
 ];

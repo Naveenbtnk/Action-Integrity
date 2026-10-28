@@ -20,6 +20,7 @@ import {
   Severity,
 } from '../src/generated/prisma/enums';
 import { getSource } from '../src/lib/adapters/registry';
+import { canonicalJson } from '../src/lib/canonical-json';
 import { db } from '../src/lib/db';
 import {
   accountCorpus,
@@ -275,16 +276,18 @@ async function seedContracts(): Promise<void> {
 async function seedPolicies(): Promise<void> {
   for (const [version, status] of [
     ['2026.10.1', PolicyStatus.ACTIVE],
+    ['2026.10.2', PolicyStatus.DRAFT],
     ['2026.9.1', PolicyStatus.RETIRED],
   ] as const) {
     const bytes = await readFile(path.resolve('config/policy', `${version}.json`));
+    const document = JSON.parse(bytes.toString('utf8'));
     await db.policyVersion.createMany({
       data: [
         {
           version,
           status,
-          hash: sha(bytes),
-          document: JSON.parse(bytes.toString('utf8')),
+          hash: version === '2026.10.2' ? sha(canonicalJson(document)) : sha(bytes),
+          document,
           reviewTicket: 'SEED-BASELINE',
           activatedAt: status === PolicyStatus.ACTIVE ? seedTime : null,
           retiredAt: status === PolicyStatus.RETIRED ? seedTime : null,
