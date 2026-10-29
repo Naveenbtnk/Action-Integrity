@@ -90,9 +90,12 @@ outside the demo database; an anchored production ledger is never truncated.
   `ActionHold`, `AuditEvent` and the notification `OutboxEvent`.
 - Approval, policy recomputation, evidence append and policy activation all run under the case row
   lock so quorum cannot be counted against a moving evidence set.
-- Execution writes `ActionExecution (PENDING)` + case `EXECUTING` + `OutboxEvent` in one transaction,
+- Case execution writes `ActionExecution (PENDING)` + case `EXECUTING` + `OutboxEvent` in one transaction,
   **then** calls the target, **then** writes the result in a second transaction. The transaction
   boundary deliberately stops before the network call: a rollback cannot undo a target write.
+- Gate-level `ALLOW` has no case. Its execution and verification rows therefore have nullable
+  `caseId`; the intent, pre-write restore point, audit event and outbox event still commit before
+  the target call. A compensation stores a second restore point for its own pre-write state.
 - A crash between call and result leaves `PENDING`, which the reconciler turns into `UNKNOWN` — never
   success. No code path retries a target write.
 - Isolation: default `READ COMMITTED`. Gate decisions, approvals, execution preconditions and

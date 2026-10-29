@@ -29,6 +29,9 @@ export async function assertQuorum(
   caseId: string,
   decision: PolicyDecision,
 ) {
+  const clock = await tx.$queryRaw<Array<{ now: Date }>>`SELECT now() AS now`;
+  const now = clock[0]?.now;
+  if (!now) throw new Error('Database clock unavailable.');
   const current = await tx.case.findUniqueOrThrow({
     where: { id: caseId },
     select: { reopenCount: true },
@@ -70,7 +73,7 @@ export async function assertQuorum(
   if (latestEvidence && reportTime && latestEvidence.capturedAt > reportTime.createdAt)
     throw new ConflictError('EVIDENCE_CHANGED');
   for (const row of approvals) {
-    if (row.expiresAt <= new Date()) throw new ConflictError('APPROVAL_EXPIRED');
+    if (row.expiresAt <= now) throw new ConflictError('APPROVAL_EXPIRED');
     if (row.boundPolicyHash !== decision.policyHash) throw new ConflictError('POLICY_STALE');
     if (row.boundEvidenceHash !== decision.evidenceHash || row.boundReportId !== decision.reportId)
       throw new ConflictError('EVIDENCE_CHANGED');

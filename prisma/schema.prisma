@@ -494,15 +494,16 @@ model OutboundAction {
 
 model RestorePoint {
   id               String   @id @default(cuid())
-  outboundActionId String   @unique @map("outbound_action_id")
+  outboundActionId String?  @unique @map("outbound_action_id")
   targetObjectType String   @map("target_object_type")
   targetObjectRef  String   @map("target_object_ref")
   state            Json     @db.JsonB
   stateHash        String   @map("state_hash")
   capturedAt       DateTime @map("captured_at") @db.Timestamptz(6)
 
-  outboundAction OutboundAction   @relation("RestorePointAction", fields: [outboundActionId], references: [id])
+  outboundAction OutboundAction?  @relation("RestorePointAction", fields: [outboundActionId], references: [id])
   linkedActions  OutboundAction[] @relation("ActionRestorePoint")
+  preWriteForExecution ActionExecution? @relation("ExecutionPreWritePoint")
 
   @@map("restore_point")
 }
@@ -736,13 +737,14 @@ model Approval {
 
 model ActionExecution {
   id                     String          @id @default(cuid())
-  caseId                 String          @map("case_id")
+  caseId                 String?         @map("case_id")
   outboundActionId       String?         @map("outbound_action_id")
   reopenCount            Int             @map("reopen_count")
   kind                   ExecutionKind
   targetObjectType       String          @map("target_object_type")
   targetObjectRef        String          @map("target_object_ref")
   restorePointId         String?         @map("restore_point_id")
+  preWriteRestorePointId String?         @unique @map("pre_write_restore_point_id")
   idempotencyKey         String          @unique @map("idempotency_key")
   status                 ExecutionStatus
   attemptCount           Int             @default(1) @map("attempt_count")
@@ -755,8 +757,9 @@ model ActionExecution {
   startedAt              DateTime        @map("started_at") @db.Timestamptz(6)
   finishedAt             DateTime?       @map("finished_at") @db.Timestamptz(6)
 
-  case           Case                 @relation(fields: [caseId], references: [id])
+  case           Case?                @relation(fields: [caseId], references: [id])
   outboundAction OutboundAction?      @relation(fields: [outboundActionId], references: [id])
+  preWriteRestorePoint RestorePoint? @relation("ExecutionPreWritePoint", fields: [preWriteRestorePointId], references: [id])
   resolvedBy     User?                @relation(fields: [resolvedById], references: [id])
   verifications  VerificationResult[]
 
@@ -768,7 +771,7 @@ model ActionExecution {
 
 model VerificationResult {
   id                String   @id @default(cuid())
-  caseId            String   @map("case_id")
+  caseId            String?  @map("case_id")
   executionId       String?  @map("execution_id")
   expectedState     Json     @map("expected_state") @db.JsonB
   observedState     Json     @map("observed_state") @db.JsonB
@@ -778,7 +781,7 @@ model VerificationResult {
   attemptCount      Int      @map("attempt_count")
   checkedAt         DateTime @map("checked_at") @db.Timestamptz(6)
 
-  case      Case             @relation(fields: [caseId], references: [id])
+  case      Case?            @relation(fields: [caseId], references: [id])
   execution ActionExecution? @relation(fields: [executionId], references: [id])
 
   @@map("verification_result")

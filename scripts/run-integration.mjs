@@ -6,6 +6,7 @@ for (const file of [
   'src/test/integration/phase4.test.ts',
   'src/test/integration/phase5.test.ts',
   'src/test/integration/phase6.test.ts',
+  'src/test/integration/phase7.test.ts',
 ]) {
   const result = spawnSync(
     process.execPath,

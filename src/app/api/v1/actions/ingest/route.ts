@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
 import type { Prisma } from '@/generated/prisma/client';
-import { OutboundActionType } from '@/generated/prisma/enums';
+import { GateDecision, OutboundActionType } from '@/generated/prisma/enums';
 import { enforceAdapterLimit } from '@/lib/adapters/rate-limit';
-import { ValidationError } from '@/lib/errors';
+import { db } from '@/lib/db';
+import { ConflictError, ValidationError } from '@/lib/errors';
+import { executeAllowedAction } from '@/lib/executor/allow';
 import { ingestAction } from '@/lib/gate/ingest';
 import { successResponse, withRoute } from '@/lib/http';
-import { withIdempotency } from '@/lib/idempotency';
+import { withIdempotencyExternal } from '@/lib/idempotency';
 import { requirePermission } from '@/lib/rbac';
 import { requireAgentKey } from '@/lib/target/auth';
 
@@ -32,17 +34,50 @@ export const POST = withRoute(async (request, context) => {
   const parsed = Body.safeParse(raw);
   if (!parsed.success) throw new ValidationError('Invalid ingest request.');
   await enforceAdapterLimit('ingest', `agent:${parsed.data.accountId}`);
-  const output = await withIdempotency(request, 'service-agent', parsed.data, async (tx) => ({
-    status: 201,
-    data: await ingestAction(tx, {
-      ...parsed.data,
-      payload: parsed.data.payload as Prisma.InputJsonValue,
-      requestedAt: new Date(parsed.data.requestedAt),
-      idempotencyKey: request.headers.get('idempotency-key') ?? '',
-      requestId: context.requestId,
-      ...(context.traceId ? { traceId: context.traceId } : {}),
-    }),
-  }));
+  const key = request.headers.get('idempotency-key') ?? '';
+  const output = await withIdempotencyExternal<Record<string, unknown>>(
+    request,
+    'service-agent',
+    parsed.data,
+    async () => {
+      const existing = await db.outboundAction.findUnique({ where: { idempotencyKey: key } });
+      if (existing && existing.gateDecision !== GateDecision.ALLOW)
+        throw new ConflictError('IDEMPOTENCY_IN_PROGRESS');
+      const ingested = existing
+        ? {
+            action: existing,
+            gate: { decision: existing.gateDecision, reasons: [] },
+            execution: null,
+            case: null,
+            pendingExecutor: true,
+          }
+        : await db.$transaction((tx) =>
+            ingestAction(tx as Prisma.TransactionClient, {
+              ...parsed.data,
+              payload: parsed.data.payload as Prisma.InputJsonValue,
+              requestedAt: new Date(parsed.data.requestedAt),
+              idempotencyKey: key,
+              requestId: context.requestId,
+              ...(context.traceId ? { traceId: context.traceId } : {}),
+            }),
+          );
+      if (!ingested.pendingExecutor) return { status: 201, data: ingested };
+      const executed = await executeAllowedAction({
+        actionId: ingested.action.id,
+        requestId: context.requestId,
+        ...(context.traceId ? { traceId: context.traceId } : {}),
+      });
+      return {
+        status: 201,
+        data: {
+          ...ingested,
+          execution: executed.execution,
+          verification: executed.verification,
+          pendingExecutor: false,
+        },
+      };
+    },
+  );
   return successResponse(output.data, context, {
     status: output.status,
     replayed: output.replayed,

@@ -132,6 +132,10 @@ a restore point; the calling automation never touches the target system.
 **Why:** A gate the caller can bypass is advisory, not enforcement. Routing every write through one
 module keeps credential scope, restore-point capture, idempotency and audit in a single place.
 **Cost:** The control plane sits in the latency path of every allowed action.
+**Schema consequence:** Gate-level `ALLOW` has no case. Its `ActionExecution` and
+`VerificationResult` have nullable `caseId`, remain linked to the outbound action and execution,
+and carry a pre-write restore point. An ambiguous result remains `UNKNOWN` until a safe read
+resolves it; the reconciler never repeats the write.
 **Reversal:** Only if latency becomes unacceptable; then the executor becomes a sidecar with the same
 guarantees, not a bypass.
 

@@ -1,4 +1,10 @@
-import { GateDecision, OutboundActionStatus, OutboundActionType } from '@/generated/prisma/enums';
+import {
+  GateDecision,
+  OutboundActionStatus,
+  OutboundActionType,
+  ServiceState,
+  TargetEntitlementStatus,
+} from '@/generated/prisma/enums';
 import { computeExposure, type ExposureEvent } from '@/lib/exposure/compute';
 
 export type GateAction = {
@@ -19,6 +25,8 @@ function validPayload(action: GateAction): boolean {
     return (
       typeof payload.from === 'string' &&
       typeof payload.to === 'string' &&
+      Object.values(ServiceState).includes(payload.from as ServiceState) &&
+      Object.values(ServiceState).includes(payload.to as ServiceState) &&
       payload.from !== payload.to
     );
   }
@@ -27,6 +35,8 @@ function validPayload(action: GateAction): boolean {
     payload.entitlementKey.length > 0 &&
     typeof payload.from === 'string' &&
     typeof payload.to === 'string' &&
+    Object.values(TargetEntitlementStatus).includes(payload.from as TargetEntitlementStatus) &&
+    Object.values(TargetEntitlementStatus).includes(payload.to as TargetEntitlementStatus) &&
     payload.from !== payload.to
   );
 }

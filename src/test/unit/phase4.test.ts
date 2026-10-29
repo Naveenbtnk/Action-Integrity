@@ -67,6 +67,12 @@ describe('Phase 4 deterministic controls', () => {
     expect(
       decide({ ...action, payload: {} }, { accountRegistered: true, openEvents: [event] }).decision,
     ).toBe(GateDecision.BLOCK);
+    expect(
+      decide(
+        { ...action, payload: { entitlementKey: 'SSO', from: 'ACTIVE', to: 'NOT_A_STATE' } },
+        { accountRegistered: true, openEvents: [] },
+      ).decision,
+    ).toBe(GateDecision.BLOCK);
     expect(decide(action, { accountRegistered: true, openEvents: [event] }).decision).toBe(
       GateDecision.HOLD,
     );

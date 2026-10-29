@@ -124,16 +124,21 @@ try {
   });
   assert.equal(adminIngest.status, 403);
 
+  const allowAccount = await db.tgtEntitlement.findFirstOrThrow({
+    where: { entitlementKey: 'SSO', status: 'ACTIVE', accountId: { not: accountId } },
+    select: { accountId: true },
+  });
   const allow = await call('/api/v1/actions/ingest', {
     ...options,
     headers: { ...options.headers, 'idempotency-key': `allow_${randomUUID()}` },
-    body: JSON.stringify({ ...body, accountId: 'acc_00043' }),
+    body: JSON.stringify({ ...body, accountId: allowAccount.accountId }),
   });
   assert.equal(allow.status, 201, JSON.stringify(allow.body.error));
   assert.equal((allow.body.data?.gate as { decision: string }).decision, 'ALLOW');
-  assert.equal(allow.body.data?.pendingExecutor, true);
+  assert.equal(allow.body.data?.pendingExecutor, false);
   assert.equal(allow.body.data?.case, null);
-  assert.equal(await db.tgtAudit.count(), beforeTarget);
+  assert.equal((allow.body.data?.verification as { passed: boolean }).passed, true);
+  assert.equal(await db.tgtAudit.count(), beforeTarget + 1);
   process.stdout.write('Phase 4 HTTP ingest, replay, RBAC, projections and ALLOW: passed\n');
 } finally {
   await db.$disconnect();

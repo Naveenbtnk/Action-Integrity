@@ -45,3 +45,7 @@ export function requireTargetKey(request: Request): void {
 export function requireAgentKey(request: Request): void {
   requireServiceKey(request, 'x-agent-key', env.AGENT_SERVICE_KEY, env.AGENT_SERVICE_KEY_PREVIOUS);
 }
+
+export function requireOpsKey(request: Request): void {
+  requireServiceKey(request, 'x-ops-key', env.OPS_SERVICE_KEY, env.OPS_SERVICE_KEY_PREVIOUS);
+}

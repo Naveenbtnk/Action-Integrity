@@ -283,8 +283,8 @@ counted and never deleted. `disposition` **is** the approval's bound disposition
 in `RBAC.md`); there is one column, not two.
 
 ### `ActionExecution`
-`id` PK · `caseId` FK · `outboundActionId` FK nullable · `reopenCount` int ·
-`kind` (`ExecutionKind`) · `targetObjectType` · `targetObjectRef` · `restorePointId` nullable ·
+`id` PK · `caseId` FK nullable for gate-level `ALLOW` · `outboundActionId` FK nullable · `reopenCount` int ·
+`kind` (`ExecutionKind`) · `targetObjectType` · `targetObjectRef` · `restorePointId` nullable (the intended prior state for compensation) · `preWriteRestorePointId` FK nullable for legacy rows (the snapshot captured immediately before this execution) ·
 `idempotencyKey` **unique** · `status` (`ExecutionStatus`) · `attemptCount` int default 1 (always 1
 for target writes; no automatic retry) · `requestPayload` jsonb · `responsePayload` jsonb nullable ·
 `failureCode` nullable · `resolvedByVerification` bool default false ·
@@ -295,7 +295,7 @@ through the executor.
 
 ### `VerificationResult`
 **Append-only.**
-`id` PK · `caseId` FK · `executionId` FK nullable (null for a `BLOCK`, which has no execution) ·
+`id` PK · `caseId` FK nullable for gate-level `ALLOW` · `executionId` FK nullable (null for a `BLOCK`, which has no execution) ·
 `expectedState` jsonb · `observedState` jsonb · `observedStateHash` ·
 `passed` bool · `mismatches` jsonb (`[{field,expected,observed}]`) · `attemptCount` int ·
 `checkedAt`

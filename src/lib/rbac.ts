@@ -245,6 +245,30 @@ export const ROUTE_PERMISSIONS: ReadonlyArray<{
     permission: 'case:escalate',
     rateLimit: 'write',
   },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/execute',
+    permission: 'case:execute',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/verify',
+    permission: 'case:verify',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/cases/:ref/reopen',
+    permission: 'case:reopen',
+    rateLimit: 'write',
+  },
+  {
+    method: 'POST',
+    pattern: '/api/v1/internal/reconcile',
+    permission: 'ops:reconcile',
+    rateLimit: 'write',
+  },
   { method: 'GET', pattern: '/api/v1/admin/policy', permission: 'policy:read', rateLimit: 'read' },
   {
     method: 'POST',

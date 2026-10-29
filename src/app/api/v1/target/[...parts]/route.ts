@@ -37,7 +37,7 @@ function field(url: URL, name: string): string {
 function idempotencyKey(request: Request): string {
   const value = request.headers.get('idempotency-key');
   if (!value) throw new AppError('IDEMPOTENCY_KEY_REQUIRED', 400, 'Idempotency-Key is required.');
-  if (!/^[A-Za-z0-9_-]{8,128}$/.test(value)) throw new ValidationError('Invalid Idempotency-Key.');
+  if (!/^[A-Za-z0-9_:-]{8,128}$/.test(value)) throw new ValidationError('Invalid Idempotency-Key.');
   return value;
 }
 async function body<T>(request: Request, schema: z.ZodType<T>): Promise<T> {
