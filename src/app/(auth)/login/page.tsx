@@ -40,35 +40,77 @@ export default async function LoginPage({
             <span className="login-brand-mark" aria-hidden="true" />
             ACTION<span>/</span>INTEGRITY
           </Link>
-          <span data-instrument>SECURE ENTRY / 01</span>
+          <Link href="/" className="login-home-link">
+            View product <span aria-hidden="true">↗</span>
+          </Link>
         </div>
+        <svg
+          className="login-wave"
+          viewBox="0 0 1200 700"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="login-wave-primary" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#08212f" />
+              <stop offset=".28" stopColor="#5295a8" />
+              <stop offset=".48" stopColor="#0e1522" />
+              <stop offset=".7" stopColor="#e32735" />
+              <stop offset="1" stopColor="#2b1029" />
+            </linearGradient>
+            <linearGradient id="login-wave-highlight" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stopColor="#225368" />
+              <stop offset=".32" stopColor="#d9f4f5" />
+              <stop offset=".56" stopColor="#48697d" />
+              <stop offset=".82" stopColor="#f24d58" />
+              <stop offset="1" stopColor="#dde7e7" />
+            </linearGradient>
+            <filter id="login-wave-blur">
+              <feGaussianBlur stdDeviation="16" />
+            </filter>
+          </defs>
+          <path
+            className="login-wave-glow"
+            d="M-80 490 C145 560 295 275 520 365 S885 600 1280 285"
+            stroke="url(#login-wave-primary)"
+            strokeWidth="76"
+            filter="url(#login-wave-blur)"
+          />
+          <path
+            className="login-wave-ribbon"
+            d="M-80 480 C145 550 295 278 520 370 S885 590 1280 290"
+            stroke="url(#login-wave-primary)"
+            strokeWidth="30"
+          />
+          <path
+            className="login-wave-ribbon login-wave-ribbon-alt"
+            d="M-80 535 C165 425 275 475 525 390 S900 275 1280 410"
+            stroke="url(#login-wave-primary)"
+            strokeWidth="22"
+          />
+          <path
+            className="login-wave-edge"
+            d="M-80 460 C145 530 295 265 520 350 S885 575 1280 270"
+            stroke="url(#login-wave-highlight)"
+            strokeWidth="2"
+          />
+          <path
+            className="login-wave-edge login-wave-edge-alt"
+            d="M-80 522 C165 414 275 462 525 378 S900 263 1280 398"
+            stroke="url(#login-wave-highlight)"
+            strokeWidth="1.5"
+          />
+        </svg>
         <div className="login-grid">
           <div className="login-story">
             <p data-instrument className="login-kicker">
-              THE CONTROL ROOM
+              ACTION INTEGRITY / ACCESS
             </p>
-            <h2>Decisions need evidence. Outcomes need proof.</h2>
+            <h2>Welcome back.</h2>
             <p className="login-description">
-              Enter the workspace for investigating conflicts, approving a governed response, and
-              verifying the customer state.
+              Sign in to review held actions, continue investigations, and verify the result of each
+              decision.
             </p>
-            <div className="login-sequence" aria-label="Control sequence">
-              <div>
-                <span>01</span>
-                <strong>DETECT</strong>
-                <small>Find the conflicting signal</small>
-              </div>
-              <div>
-                <span>02</span>
-                <strong>HOLD</strong>
-                <small>Contain the exposed action</small>
-              </div>
-              <div>
-                <span>03</span>
-                <strong>VERIFY</strong>
-                <small>Prove the business outcome</small>
-              </div>
-            </div>
           </div>
           <div className="login-form">
             <SignInPanel
@@ -79,10 +121,6 @@ export default async function LoginPage({
               retryAfter={params.retry}
             />
           </div>
-        </div>
-        <div className="login-bottom" data-instrument>
-          <span>EVIDENCE BEFORE ACTION</span>
-          <span>VERIFICATION BEFORE CLOSURE</span>
         </div>
       </div>
     </main>

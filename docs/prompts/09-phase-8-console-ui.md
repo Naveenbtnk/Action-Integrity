@@ -28,7 +28,7 @@ than filtering a list in the client.
    (ADR-029). Verify their copy, responsive layout, reduced-motion behavior and sign-in link.
    Keep known gaps visible.
 3. `src/app/(auth)/login/page.tsx` + `src/components/auth/SignInPanel.tsx` per `UI_UX_BRIEF.md`
-   §5.1: two-pane layout above 1024 px, one `h1`, `Continue with SSO` as the only production action.
+   §5.1: two-pane layout above 1200 CSS px, one `h1`, `Continue with SSO` as the only production action.
    The email/password block renders only when `AUTH_CREDENTIALS_ENABLED=true` and
    `NODE_ENV !== "production"` — absent from the production render, not CSS-hidden — and holds the
    seeded one-click fills. One `role="alert"` region carries generic failure copy, `RATE_LIMITED` with

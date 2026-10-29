@@ -243,9 +243,11 @@ effects. `/trust` describes the operating model, roles, audit chain and known ga
 
 **Sign in — `/login`** — purpose: one way in, no way to create an identity.
 
-Layout: at ≥ 1200 CSS px a compact centered two-column access shell with the product claim and a
-three-step control sequence beside the sign-in form. Below 1200 CSS px, the form comes first and the
-explanation follows. Keep a single `h1` in the form. No carousel or testimonial.
+Layout: at ≥ 1200 CSS px a centered two-column access shell. A short welcome message sits beside
+a translucent sign-in panel, with a decorative vector ribbon behind both. Below 1200 CSS px,
+the form comes first and the message follows. Keep a single `h1` in the form. The ribbon stops
+moving under `prefers-reduced-motion`; fields and focus indicators remain clear over the glass.
+No carousel, testimonial or self-registration affordance.
 
 Card, in order:
 
@@ -257,11 +259,8 @@ Card, in order:
    field is absent from the production render, not hidden with CSS. Email (`autocomplete="username"`,
    `inputMode="email"`), password (`autocomplete="current-password"`, reveal toggle with
    `aria-pressed`), submit. Enter submits; paste and password managers are allowed.
-3. **Provisioning line** — *"Accounts are provisioned by an administrator. There is no self-service
-   sign-up or password reset."* Plain text with the security contact from config; no link to an
-   invitation or reset form.
-4. **Footer strip** — environment (`LOCAL` / `PREVIEW` / `PRODUCTION`), build SHA, active policy
-   version. Space Mono 12 px, muted. Never user data.
+3. **Provisioning line** — *"Need access? Contact your workspace administrator."* Plain text; no
+   link to an invitation or reset form.
 
 Error and edge states, all in one `role="alert"` region above the card, focused when it appears:
 

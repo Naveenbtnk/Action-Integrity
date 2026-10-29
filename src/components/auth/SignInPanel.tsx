@@ -71,17 +71,18 @@ export function SignInPanel({
       className="w-full border border-border bg-card p-6 lg:p-7"
       aria-labelledby="sign-in-title"
     >
-      <div className="flex size-11 items-center justify-center border border-border bg-background">
+      <div className="login-lock flex size-11 items-center justify-center border border-border bg-background">
         <LockKeyhole className="size-5 text-primary" aria-hidden="true" />
       </div>
-      <p data-instrument className="mt-5 text-xs text-operational-muted">
-        CONTROLLED ACCESS / 01
-      </p>
-      <h1 id="sign-in-title" className="mt-2 text-[26px] font-medium leading-tight">
-        Enter the control room
+      <h1 id="sign-in-title" className="mt-4 text-[28px] font-medium leading-tight">
+        Sign in
       </h1>
       <p className="mt-3 text-sm leading-6 text-operational-muted">
-        Review evidence, record decisions, and verify the business state after every action.
+        {ssoEnabled
+          ? "Continue with your organization's identity provider."
+          : credentialsEnabled
+            ? 'Enter your local development credentials.'
+            : 'Sign-in is unavailable in this environment.'}
       </p>
       <div role="alert" className={error ? 'mt-4 border border-primary p-3 text-sm' : 'sr-only'}>
         {error}
@@ -132,29 +133,31 @@ export function SignInPanel({
             <Button
               type="submit"
               variant="outline"
-              className="h-10 w-full rounded-[4px]"
+              className="login-submit h-10 w-full rounded-[4px]"
               disabled={busy}
             >
               {busy ? 'Signing in…' : 'Sign in locally'}
             </Button>
           </form>
-          <div className="mt-4 flex flex-wrap gap-2" aria-label="Seeded local accounts">
-            {seededEmails.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => setEmail(item)}
-                className="border border-border px-2 py-1 font-mono text-[11px] text-operational-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {item.split('@')[0]}
-              </button>
-            ))}
-          </div>
+          <details className="login-demo-accounts mt-4">
+            <summary>Demo accounts</summary>
+            <div className="mt-3 flex flex-wrap gap-2" aria-label="Seeded local accounts">
+              {seededEmails.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setEmail(item)}
+                  className="border border-border px-2 py-1 font-mono text-[11px] text-operational-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {item.split('@')[0]}
+                </button>
+              ))}
+            </div>
+          </details>
         </div>
       )}
       <p className="mt-5 text-xs leading-5 text-operational-muted">
-        Accounts are provisioned by an administrator. There is no self-service sign-up or password
-        reset.
+        Need access? Contact your workspace administrator.
       </p>
     </section>
   );
