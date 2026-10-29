@@ -320,7 +320,7 @@ pass. Reverting to an advisory-affected major is prohibited.
 
 ### ADR-027 — Astro for the static public site; Next.js for the control room
 
-**Status:** Accepted
+**Status:** Superseded by ADR-029
 **Decision:** The public product and trust pages are a separate static Astro site under
 `apps/public`. The authenticated control room, API, identity, audit and all business actions stay in
 the Next.js application. The sites deploy as separate projects, with the Astro site on the public
@@ -336,8 +336,6 @@ and [Astro Vercel deployment](https://docs.astro.build/en/guides/integrations-gu
 The public site must never handle authentication, evidence or business mutations.
 **Reversal:** The public pages can move back to Next.js without changing control-plane APIs or data.
 
----
-
 ### ADR-028 — Preserve immutable policy history and gate the Phase 6 policy
 
 **Status:** Accepted
@@ -351,6 +349,20 @@ active database version and its verification state.
 would erase the meaning of earlier decisions and violate that control.
 **Cost:** A new deployment needs an explicit policy activation before policy evaluation is usable.
 **Reversal:** A later reviewed version can be activated; historical versions stay immutable.
+
+---
+
+### ADR-029 — One Next.js service for public and console routes
+
+**Status:** Accepted
+**Decision:** Product and Trust are Next.js App Router pages on the same origin as login and the
+control room. Remove the Astro build and cross-origin link configuration.
+**Why:** The separate static service added a second deployment and local server for two pages.
+One service is easier to operate on a free hosting account and avoids a confusing public redirect.
+The public pages remain semantic server-rendered HTML with CSS-only, reduced-motion-aware visuals.
+**Cost:** Public pages share the Next.js deployment lifecycle with the control room.
+**Reversal:** A separate static origin can be introduced if measured scale or organizational
+requirements justify it.
 
 ---
 

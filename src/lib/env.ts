@@ -17,7 +17,6 @@ const EnvironmentSchema = z.object({
   DIRECT_DATABASE_URL: z.string().min(1, 'DIRECT_DATABASE_URL is required'),
   AUTH_SECRET: z.string().min(32, 'AUTH_SECRET must contain at least 32 characters'),
   AUTH_URL: OptionalUrl,
-  PUBLIC_SITE_URL: OptionalUrl,
   AUTH_CREDENTIALS_ENABLED: BooleanString,
   OIDC_ISSUER: OptionalUrl,
   OIDC_CLIENT_ID: z.string().optional(),
@@ -70,7 +69,6 @@ export type AppEnv = Readonly<z.infer<typeof EnvironmentSchema>>;
 
 const PRODUCTION_REQUIRED = [
   'AUTH_URL',
-  'PUBLIC_SITE_URL',
   'OIDC_ISSUER',
   'OIDC_CLIENT_ID',
   'OIDC_CLIENT_SECRET',
@@ -101,8 +99,6 @@ export function parseEnv(source: NodeJS.ProcessEnv): AppEnv {
     if (parsed.ALLOW_DEMO_RESET) unsafe.push('ALLOW_DEMO_RESET');
     if (parsed.LOG_PRETTY) unsafe.push('LOG_PRETTY');
     if (parsed.OTEL_SDK_DISABLED === '1') unsafe.push('OTEL_SDK_DISABLED');
-    if (parsed.PUBLIC_SITE_URL && new URL(parsed.PUBLIC_SITE_URL).protocol !== 'https:')
-      unsafe.push('PUBLIC_SITE_URL');
 
     if (missing.length > 0 || unsafe.length > 0) {
       const fields = [...missing, ...unsafe].sort();

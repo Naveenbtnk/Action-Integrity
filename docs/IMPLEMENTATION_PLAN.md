@@ -142,7 +142,7 @@ with one key produce one write; quota/SoD failures write no target row.
 
 **Goal:** an operator can drive the loop without curl, and can see why they cannot act.
 **Read:** `APP_FLOW.md` (all), `UI_UX_BRIEF.md` (all).
-**Build:** verify the separately built Astro public `/` and `/trust` (ADR-027); sign-in `SignInPanel` (SSO; dev-only credentials; generic failure,
+**Build:** verify the Next.js public `/` and `/trust` (ADR-029); sign-in `SignInPanel` (SSO; dev-only credentials; generic failure,
 rate-limit and limiter-outage states; same-origin `next`; no sign-up route); application shell with the Monitor /
 Investigate / Resolve / Control / Improve / Administration rail; Overview; Action Queue and action
 detail; Investigations queue and the three-zone workspace with Summary, Evidence, Impact, Hypotheses,

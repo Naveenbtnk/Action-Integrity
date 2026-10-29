@@ -8,7 +8,7 @@
   },
   "scripts": {
     "predev": "npm run check:routes",
-    "dev": "concurrently --kill-others --names console,public --prefix-colors red,blue \"next dev --webpack\" \"npm --prefix apps/public run dev\"",
+    "dev": "next dev --webpack",
     "predev:console": "npm run check:routes",
     "dev:console": "next dev --webpack",
     "prebuild": "npm run check:routes",
@@ -93,7 +93,6 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.72.1",
     "@typescript-eslint/parser": "8.72.1",
-    "concurrently": "^10.0.6",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.3",
     "eslint-plugin-import": "2.32.0",

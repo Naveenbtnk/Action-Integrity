@@ -73,17 +73,15 @@ cp .env.example .env          # fill DATABASE_URL, AUTH_SECRET, GEMINI_API_KEY,
                               # AGENT_SERVICE_KEY, TARGET_SERVICE_KEY, OPS_SERVICE_KEY, AIC_BASE_URL
 docker compose up -d db redis  # host ports 15432 and 16379
 npm install
-npm --prefix apps/public install
 npx prisma migrate deploy
 npm run seed                  # prints local credentials once
 npm run policy:hash           # canonical hash for draft policy 2026.10.2
-npm run dev                   # starts Astro at :4321 and the Next.js control room at :3000
+npm run dev                   # Product, Trust, sign-in and control room at :3000
 ```
 
-With both servers running, `http://localhost:3000/` redirects to the Astro public site. Its
-**Open control room** link leads to `http://localhost:3000/login`. In production, configure
-`PUBLIC_SITE_URL` to the HTTPS origin of the deployed Astro site. The console and public site
-remain separate origins.
+The public Product and Trust pages are at `http://localhost:3000/` and
+`http://localhost:3000/trust`. **Open control room** leads to `/login`.
+All pages deploy from the same Next.js service.
 
 The seed preserves the historical `2026.10.1` placeholder as active and registers `2026.10.2`
 as a draft. An authenticated `ADMIN` must call `POST /api/v1/admin/policy/activate` with its

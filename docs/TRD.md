@@ -12,7 +12,7 @@
 | Layer                | Choice                                                                                                                                  | Why                                                                             |
 | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | Console/API framework | Next.js 16.4 (App Router) + TypeScript `strict`                                                                                         | One codebase for authenticated UI + control-plane API; ADR-026                  |
-| Public framework     | Astro 7.4 (static HTML/CSS)                                                                                                             | Product and trust pages on a separate public origin; ADR-027                    |
+| Public framework     | Next.js 16.4 App Router                                                                                                                 | Product and trust pages on the same origin; ADR-029                              |
 | UI foundation        | React 19.3, Tailwind CSS 4                                                                                                              | Server Components by default; one token layer                                   |
 | Component layer      | shadcn/ui generated on the **Base UI** primitive base                                                                                   | Owned, accessible component source; one component and theming system (ADR-025)  |
 | Operational surfaces | TanStack Table, React Flow                                                                                                              | Server-driven queues and an evidence graph with a list alternative              |
@@ -44,8 +44,7 @@ daisyUI are prohibited: they would introduce a second component, theming or sema
 ## 2. Runtime topology
 
 ```
-Browser ──▶ Astro public site (Vercel, static) ──▶ console sign-in link
-        └─▶ Next.js console/API (Vercel)
+Browser ──▶ Next.js public, console and API (one origin)
               ├─ Server Components / Route Handlers ──▶ Postgres (Neon, pooled)
               ├─ Control plane (deterministic, in-process lib)
               ├─ Investigator (Gemini, server-only)

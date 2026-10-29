@@ -35,7 +35,6 @@ describe('environment validation', () => {
         NODE_ENV: 'production',
         AUTH_CREDENTIALS_ENABLED: 'true',
         AUTH_URL: 'https://example.com',
-        PUBLIC_SITE_URL: 'https://www.example.com',
         OIDC_ISSUER: 'https://id.example.com',
         OIDC_CLIENT_ID: 'client',
         OIDC_CLIENT_SECRET: 'secret',
@@ -47,25 +46,5 @@ describe('environment validation', () => {
         OTEL_SDK_DISABLED: '0',
       }),
     ).toThrow('AUTH_CREDENTIALS_ENABLED');
-  });
-
-  it('requires an HTTPS public site origin in production', () => {
-    expect(() =>
-      parseEnv({
-        ...valid,
-        NODE_ENV: 'production',
-        AUTH_URL: 'https://console.example.com',
-        PUBLIC_SITE_URL: 'http://www.example.com',
-        OIDC_ISSUER: 'https://id.example.com',
-        OIDC_CLIENT_ID: 'client',
-        OIDC_CLIENT_SECRET: 'secret',
-        REDIS_URL: 'redis://localhost:6379',
-        ANCHOR_STORE_ENDPOINT: 'https://objects.example.com',
-        ANCHOR_STORE_BUCKET: 'anchors',
-        ANCHOR_STORE_ACCESS_KEY: 'access',
-        ANCHOR_STORE_SECRET_KEY: 'secret',
-        OTEL_SDK_DISABLED: '0',
-      }),
-    ).toThrow('PUBLIC_SITE_URL');
   });
 });
