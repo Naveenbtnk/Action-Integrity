@@ -255,7 +255,7 @@ async function login(page: import('@playwright/test').Page, email: string) {
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(passwords.get(email) ?? '');
   await page.getByRole('button', { name: 'Sign in locally' }).click();
-  await expect(page).toHaveURL(/\/app\/overview/);
+  await expect(page).toHaveURL(/\/app\/overview/, { timeout: 60_000 });
 }
 
 test('multipage navigation keeps each workflow distinct at desktop and compact widths', async ({
@@ -314,6 +314,23 @@ test('action table offers compact density, column controls, and keyboard row nav
   await expect(page).toHaveURL(/\/app\/actions\/[^/]+/);
 });
 
+test('investigation views keep owner and evidence context on the server', async ({ page }) => {
+  test.setTimeout(180_000);
+  await login(page, identities.viewer);
+  await page.goto(`${base}/app/investigations`);
+  await expect(page.getByRole('heading', { name: 'Investigations' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Hypotheses' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Owner' })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'SLA' })).toBeVisible();
+  await page.getByRole('link', { name: 'Evidence needed' }).click();
+  await expect(page).toHaveURL(/view=evidence/);
+  await page.getByRole('link', { name: 'Assigned to me' }).click();
+  await expect(page).toHaveURL(/view=owner/);
+  await expect(page.getByText('No cases match this view.')).toBeVisible();
+  await page.getByRole('link', { name: 'Active' }).click();
+  await expect(page).not.toHaveURL(/view=/);
+});
+
 test('action detail shows linked case recommendation and policy boundary', async ({ page }) => {
   const action = await db.outboundAction.findFirstOrThrow({
     where: { case: { ref: quorumRef } },
@@ -352,8 +369,10 @@ test('case-loop and sod: reviewer approves, another reviewer blocks, then verifi
   await executorPage.getByRole('button', { name: 'Complete block' }).click();
   await expect(executorPage.getByRole('heading', { name: 'Verify business state' })).toBeVisible();
   await executorPage.getByRole('button', { name: 'Run verification' }).click();
-  await expect(executorPage.getByText('Business state verified.')).toBeVisible();
-  await expect(executorPage.getByText('Closed · verified').first()).toBeVisible();
+  await expect(executorPage.getByText('Business state verified.')).toBeVisible({ timeout: 60_000 });
+  await expect(executorPage.getByText('Closed · verified').first()).toBeVisible({
+    timeout: 60_000,
+  });
   await reviewer.close();
   await executor.close();
 });

@@ -14,7 +14,7 @@ const safeguards = [
 export default function TrustPage() {
   return (
     <main id="main-content" className="mx-auto min-h-screen max-w-[1200px] px-6 py-16">
-      <Button render={<Link href="/" />} variant="ghost">
+      <Button nativeButton={false} render={<Link href="/" />} variant="ghost">
         <ArrowLeft aria-hidden="true" />
         Back
       </Button>

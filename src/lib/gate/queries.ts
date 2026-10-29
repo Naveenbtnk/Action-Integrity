@@ -77,6 +77,8 @@ export async function getAction(id: string) {
 
 export async function listCases(query: {
   status?: CaseStatus | undefined;
+  statusNotIn?: CaseStatus[] | undefined;
+  assignedToId?: string | undefined;
   severity?: Severity | undefined;
   mode?: CaseMode | undefined;
   riskBand?: string | undefined;
@@ -101,7 +103,12 @@ export async function listCases(query: {
   const cases = await db.case.findMany({
     where: {
       ...(matchingCaseIds ? { id: { in: matchingCaseIds } } : {}),
-      ...(query.status ? { status: query.status } : {}),
+      ...(query.status
+        ? { status: query.status }
+        : query.statusNotIn
+          ? { status: { notIn: query.statusNotIn } }
+          : {}),
+      ...(query.assignedToId ? { assignedToId: query.assignedToId } : {}),
       ...(query.severity ? { severity: query.severity } : {}),
       ...(query.mode ? { mode: query.mode } : {}),
       ...(query.riskBand ? { riskBand: query.riskBand } : {}),
@@ -109,16 +116,32 @@ export async function listCases(query: {
     include: {
       integrityEvent: { select: { summary: true, type: true } },
       actions: { select: { id: true, ref: true, status: true } },
+      assignedTo: { select: { name: true } },
+      reports: {
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+        select: { _count: { select: { hypotheses: true } } },
+      },
+      evidenceRequests: {
+        where: { status: 'REQUESTED' },
+        select: { id: true },
+      },
     },
     orderBy: [{ openedAt: 'desc' }, { id: 'desc' }],
     take: query.limit + 1,
     ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
   });
   return {
-    cases: cases.slice(0, query.limit).map((caseRow) => ({
-      ...caseRow,
-      estimatedValueMinor: caseRow.estimatedValueMinor.toString(),
-    })),
+    cases: cases.slice(0, query.limit).map((caseRow) => {
+      const { assignedTo, reports, evidenceRequests, ...record } = caseRow;
+      return {
+        ...record,
+        estimatedValueMinor: record.estimatedValueMinor.toString(),
+        ownerName: assignedTo?.name ?? null,
+        hypothesisCount: reports[0]?._count.hypotheses ?? 0,
+        openEvidenceRequests: evidenceRequests.length,
+      };
+    }),
     nextCursor: cases.length > query.limit ? cases[query.limit - 1]?.id : null,
   };
 }
