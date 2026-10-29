@@ -12,6 +12,7 @@ const Query = z
   .object({
     status: z.enum(OutboundActionStatus).optional(),
     accountId: z.string().min(1).optional(),
+    sort: z.enum(['newest', 'oldest']).optional(),
     cursor: z.string().min(1).optional(),
     limit: z.coerce.number().int().min(1).max(100).default(50),
   })

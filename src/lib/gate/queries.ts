@@ -13,16 +13,18 @@ import { NotFoundError } from '@/lib/errors';
 export async function listActions(query: {
   status?: OutboundActionStatus | undefined;
   accountId?: string | undefined;
+  sort?: 'newest' | 'oldest' | undefined;
   cursor?: string | undefined;
   limit: number;
 }) {
+  const order = query.sort === 'oldest' ? 'asc' : 'desc';
   const actions = await db.outboundAction.findMany({
     where: {
       ...(query.status ? { status: query.status } : {}),
       ...(query.accountId ? { accountId: query.accountId } : {}),
     },
     include: { case: { select: { ref: true } }, holds: { where: { releasedAt: null } } },
-    orderBy: [{ requestedAt: 'desc' }, { id: 'desc' }],
+    orderBy: [{ requestedAt: order }, { id: order }],
     take: query.limit + 1,
     ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
   });

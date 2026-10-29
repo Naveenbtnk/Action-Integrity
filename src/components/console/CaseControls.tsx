@@ -41,6 +41,7 @@ interface Props {
 function DecisionControls(props: Props) {
   const router = useRouter();
   const executionKey = useRef<string | null>(null);
+  const requestKeys = useRef(new Map<string, string>());
   const [busy, setBusy] = useState(false);
   const [executionUnconfirmed, setExecutionUnconfirmed] = useState(false);
   const [error, setError] = useState<ApiError | null>(null);
@@ -53,6 +54,9 @@ function DecisionControls(props: Props) {
       queueMicrotask(() => setNote(saved));
     }
   }, [props.caseRef]);
+  useEffect(() => {
+    if (props.status === 'REOPENED') executionKey.current = null;
+  }, [props.status]);
   const [confirmation, setConfirmation] = useState('');
   const [sourceKey, setSourceKey] = useState('');
   const [recordRef, setRecordRef] = useState('');
@@ -72,7 +76,13 @@ function DecisionControls(props: Props) {
     ) ?? false;
   const safeRefusal = props.status === 'SAFE_REFUSAL' || props.disposition === 'SAFE_REFUSAL';
 
-  async function mutate(path: string, body: object, id: string) {
+  async function mutate(path: string, body: object, id?: string) {
+    const signature = `${path}:${JSON.stringify(body)}`;
+    let requestKey = id ?? requestKeys.current.get(signature);
+    if (!requestKey) {
+      requestKey = crypto.randomUUID();
+      requestKeys.current.set(signature, requestKey);
+    }
     setBusy(true);
     setError(null);
     setReplayed(false);
@@ -80,8 +90,9 @@ function DecisionControls(props: Props) {
       const response = await apiFetch(path, {
         method: 'POST',
         body: JSON.stringify(body),
-        headers: { 'Idempotency-Key': id },
+        headers: { 'Idempotency-Key': requestKey },
       });
+      requestKeys.current.delete(signature);
       setReplayed(response.replayed);
       await approvals.refetch();
       router.refresh();
@@ -195,11 +206,11 @@ function DecisionControls(props: Props) {
             className="mt-5 space-y-3"
             onSubmit={(event) => {
               event.preventDefault();
-              void mutate(
-                `${path}/approve`,
-                { decision: 'APPROVE', disposition: props.disposition, rationale: note },
-                crypto.randomUUID(),
-              );
+              void mutate(`${path}/approve`, {
+                decision: 'APPROVE',
+                disposition: props.disposition,
+                rationale: note,
+              });
             }}
           >
             <label htmlFor="approval-rationale" className="block text-sm">
@@ -317,7 +328,7 @@ function DecisionControls(props: Props) {
             <Button
               className="mt-5 rounded-[4px]"
               disabled={busy}
-              onClick={() => void mutate(`${path}/verify`, {}, crypto.randomUUID())}
+              onClick={() => void mutate(`${path}/verify`, {})}
             >
               Run verification
             </Button>
@@ -334,7 +345,7 @@ function DecisionControls(props: Props) {
             <Button
               className="mt-4 rounded-[4px]"
               disabled={busy}
-              onClick={() => void mutate(`${path}/investigate`, {}, crypto.randomUUID())}
+              onClick={() => void mutate(`${path}/investigate`, {})}
             >
               Run investigation
             </Button>
@@ -356,11 +367,13 @@ function DecisionControls(props: Props) {
               className="mt-4 space-y-3"
               onSubmit={(event) => {
                 event.preventDefault();
-                void mutate(
-                  `${path}/evidence`,
-                  { kind: 'OWNER_CONFIRMATION', sourceKey, recordRef, excerpt, stance },
-                  crypto.randomUUID(),
-                );
+                void mutate(`${path}/evidence`, {
+                  kind: 'OWNER_CONFIRMATION',
+                  sourceKey,
+                  recordRef,
+                  excerpt,
+                  stance,
+                });
               }}
             >
               <label htmlFor="evidence-source" className="block text-sm">
@@ -414,11 +427,7 @@ function DecisionControls(props: Props) {
               className="mt-6 space-y-3 border-t border-border pt-5"
               onSubmit={(event) => {
                 event.preventDefault();
-                void mutate(
-                  `${path}/evidence-requests`,
-                  { ownerTeam, question, dueInHours: 24 },
-                  crypto.randomUUID(),
-                );
+                void mutate(`${path}/evidence-requests`, { ownerTeam, question, dueInHours: 24 });
               }}
             >
               <h3 className="font-medium">Request missing evidence</h3>
@@ -449,11 +458,7 @@ function DecisionControls(props: Props) {
           </section>
         )}
       {props.canInvestigate && props.status === 'AWAITING_APPROVAL' && (
-        <Button
-          variant="outline"
-          disabled={busy}
-          onClick={() => void mutate(`${path}/policy`, {}, crypto.randomUUID())}
-        >
+        <Button variant="outline" disabled={busy} onClick={() => void mutate(`${path}/policy`, {})}>
           Compute or refresh policy decision
         </Button>
       )}

@@ -8,16 +8,27 @@ import type { ReactNode } from 'react';
 
 export default async function ApplicationLayout({ children }: { readonly children: ReactNode }) {
   const user = await pagePrincipal();
-  const activePolicy = await db.policyVersion.findFirst({
-    where: { status: 'ACTIVE' },
-    select: { version: true, hash: true },
-  });
+  const [activePolicy, degradation, activeBreakGlass] = await Promise.all([
+    db.policyVersion.findFirst({
+      where: { status: 'ACTIVE' },
+      select: { version: true, hash: true },
+    }),
+    db.degradationState.findFirst({
+      orderBy: { changedAt: 'desc' },
+      select: { level: true, reason: true },
+    }),
+    db.breakGlassElevation.count({
+      where: { status: 'ACTIVE', expiresAt: { gt: new Date() } },
+    }),
+  ]);
   return (
     <AppShell
       user={{ name: user.name, roles: user.roles }}
       environment={env.NODE_ENV.toUpperCase()}
       mode={env.INVESTIGATION_MODE.toUpperCase()}
       policy={activePolicy ? { version: activePolicy.version, hash: activePolicy.hash } : null}
+      degradation={degradation}
+      activeBreakGlass={activeBreakGlass}
       can={(permission) => user.roles.some((role) => ROLE_PERMISSIONS[role].includes(permission))}
     >
       {children}

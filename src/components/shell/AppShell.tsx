@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { AppNavigation } from '@/components/shell/AppNavigation';
 import { GlobalSearch } from '@/components/shell/GlobalSearch';
-import type { Role } from '@/generated/prisma/enums';
+import type { DegradationLevel, Role } from '@/generated/prisma/enums';
 import { signOut } from '@/lib/auth/config';
 import type { Permission } from '@/lib/rbac';
 
@@ -16,9 +16,20 @@ interface AppShellProps {
   readonly environment: string;
   readonly mode: string;
   readonly policy: { version: string; hash: string } | null;
+  readonly degradation: { level: DegradationLevel; reason: string } | null;
+  readonly activeBreakGlass: number;
 }
 
-export function AppShell({ can, children, user, environment, mode, policy }: AppShellProps) {
+export function AppShell({
+  can,
+  children,
+  user,
+  environment,
+  mode,
+  policy,
+  degradation,
+  activeBreakGlass,
+}: AppShellProps) {
   const permissions = (['case:read', 'action:read', 'policy:read', 'audit:read'] as const).filter(
     can,
   );
@@ -59,6 +70,15 @@ export function AppShell({ can, children, user, environment, mode, policy }: App
                 POLICY {policy.version}
               </Link>
             )}
+            {degradation && degradation.level !== 'L0_NORMAL' && (
+              <span
+                data-instrument
+                title={degradation.reason}
+                className={`border px-2 py-1 text-[10px] ${degradation.level === 'L4_AUDIT_BROKEN' ? 'border-primary text-primary' : 'border-operational-warning text-operational-warning'}`}
+              >
+                {degradation.level.replaceAll('_', ' ')}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-3 text-xs">
             <GlobalSearch />
@@ -84,6 +104,28 @@ export function AppShell({ can, children, user, environment, mode, policy }: App
         <div className="border-b border-border xl:hidden">
           <AppNavigation permissions={[...permissions]} compact />
         </div>
+        {degradation && degradation.level !== 'L0_NORMAL' && (
+          <div
+            role={degradation.level === 'L4_AUDIT_BROKEN' ? 'alert' : 'status'}
+            className={`border-b px-5 py-3 text-sm lg:px-8 ${degradation.level === 'L4_AUDIT_BROKEN' ? 'border-primary bg-primary/10 text-primary' : 'border-operational-warning/50 bg-operational-warning/10 text-operational-warning'}`}
+          >
+            <strong>
+              {degradation.level === 'L4_AUDIT_BROKEN'
+                ? 'Audit chain broken — writes frozen.'
+                : 'Service degraded.'}
+            </strong>{' '}
+            {degradation.reason}
+          </div>
+        )}
+        {activeBreakGlass > 0 && (
+          <div
+            role="status"
+            className="border-b border-operational-warning/50 bg-operational-warning/10 px-5 py-3 text-sm text-operational-warning lg:px-8"
+          >
+            Emergency override active for {activeBreakGlass} case{activeBreakGlass === 1 ? '' : 's'}
+            . Decisions still require the recorded scope and separate approval.
+          </div>
+        )}
         {user.roles.includes('ADMIN') && (
           <div
             role="status"

@@ -7,7 +7,9 @@ import { db } from '@/lib/db';
 
 export default async function OverviewPage() {
   await pagePrincipalWith('case:read');
-  const [counts, attention] = await Promise.all([
+  const asOf = new Date();
+  const dayAgo = new Date(asOf.getTime() - 24 * 60 * 60 * 1000);
+  const [counts, attention, recentActions, signals] = await Promise.all([
     db.case.groupBy({ by: ['status'], _count: { id: true } }),
     db.case.findMany({
       where: {
@@ -29,8 +31,36 @@ export default async function OverviewPage() {
       orderBy: [{ riskScore: 'desc' }, { openedAt: 'asc' }],
       take: 5,
     }),
+    db.outboundAction.groupBy({
+      by: ['status'],
+      where: { requestedAt: { gte: dayAgo } },
+      _count: { id: true },
+    }),
+    db.integrityEvent.findMany({
+      orderBy: { detectedAt: 'desc' },
+      take: 3,
+      select: {
+        id: true,
+        type: true,
+        summary: true,
+        detectedAt: true,
+        contract: {
+          select: {
+            sourceKey: true,
+            snapshots: {
+              orderBy: { capturedAt: 'desc' },
+              take: 1,
+              select: { sourceUpdatedAt: true },
+            },
+          },
+        },
+      },
+    }),
   ]);
   const count = (status: string) => counts.find((item) => item.status === status)?._count.id ?? 0;
+  const actionCount = (status: string) =>
+    recentActions.find((item) => item.status === status)?._count.id ?? 0;
+  const actionTotal = recentActions.reduce((sum, item) => sum + item._count.id, 0);
   return (
     <PageFrame
       eyebrow="MONITOR / 01"
@@ -147,6 +177,82 @@ export default async function OverviewPage() {
           </div>
         </aside>
       </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <section aria-labelledby="flow-heading" className="border border-border bg-card p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p data-instrument className="text-[10px] text-operational-muted">
+                LAST 24 HOURS
+              </p>
+              <h2 id="flow-heading" className="mt-2 text-base font-medium">
+                Action flow
+              </h2>
+            </div>
+            <Link href="/app/actions" className="text-xs text-primary hover:underline">
+              View queue ↗
+            </Link>
+          </div>
+          <dl className="mt-4 divide-y divide-border text-sm">
+            {[
+              ['Proposed', actionTotal],
+              ['Held', actionCount('HELD')],
+              ['Executed', actionCount('EXECUTED')],
+              ['Blocked', actionCount('BLOCKED')],
+            ].map(([label, value]) => (
+              <div key={label} className="flex items-center justify-between py-2">
+                <dt className="text-operational-muted">{label}</dt>
+                <dd className="font-mono tabular-nums">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+        <section aria-labelledby="signals-heading" className="border border-border bg-card p-5">
+          <p data-instrument className="text-[10px] text-operational-muted">
+            SOURCE OBSERVATIONS
+          </p>
+          <h2 id="signals-heading" className="mt-2 text-base font-medium">
+            Recent integrity signals
+          </h2>
+          {signals.length === 0 ? (
+            <p className="mt-4 text-sm text-operational-muted">No signals recorded.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-border">
+              {signals.map((signal) => (
+                <li key={signal.id} className="py-3 first:pt-0">
+                  <p data-instrument className="text-[10px] text-primary">
+                    {signal.contract.sourceKey} / {signal.type}
+                  </p>
+                  <p className="mt-1 line-clamp-1 text-sm">{signal.summary}</p>
+                  <p className="mt-1 text-xs text-operational-muted">
+                    Detected{' '}
+                    <time dateTime={signal.detectedAt.toISOString()}>
+                      {signal.detectedAt.toISOString().slice(0, 16).replace('T', ' ')} UTC
+                    </time>
+                    {' · '}Source updated{' '}
+                    {signal.contract.snapshots[0] ? (
+                      <time dateTime={signal.contract.snapshots[0].sourceUpdatedAt.toISOString()}>
+                        {signal.contract.snapshots[0].sourceUpdatedAt
+                          .toISOString()
+                          .slice(0, 16)
+                          .replace('T', ' ')}{' '}
+                        UTC
+                      </time>
+                    ) : (
+                      'unknown'
+                    )}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+      <p data-instrument className="mt-4 text-[10px] text-operational-muted">
+        DATA AS OF{' '}
+        <time dateTime={asOf.toISOString()}>
+          {asOf.toISOString().slice(0, 16).replace('T', ' ')} UTC
+        </time>
+      </p>
     </PageFrame>
   );
 }

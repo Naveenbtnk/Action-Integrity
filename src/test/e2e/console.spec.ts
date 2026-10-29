@@ -288,6 +288,45 @@ test('multipage navigation keeps each workflow distinct at desktop and compact w
   }
 });
 
+test('action table offers compact density, column controls, and keyboard row navigation', async ({
+  page,
+}) => {
+  await login(page, identities.viewer);
+  await page.goto(`${base}/app/actions`);
+  await page.getByRole('link', { name: 'Oldest' }).click();
+  await expect(page).toHaveURL(/sort=oldest/);
+  await page.getByRole('link', { name: 'Newest' }).click();
+  await expect(page).not.toHaveURL(/sort=oldest/);
+  await page.getByRole('button', { name: 'Compact rows' }).click();
+  await expect(page.getByRole('button', { name: 'Comfortable rows' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByText('Columns', { exact: true }).click();
+  await page.getByRole('checkbox', { name: 'Account' }).uncheck();
+  await expect(page.getByRole('columnheader', { name: 'Account' })).toHaveCount(0);
+  const first = page.locator('tbody tr').first();
+  const second = page.locator('tbody tr').nth(1);
+  await first.focus();
+  await first.press('ArrowDown');
+  await expect(second).toBeFocused();
+  await second.press('Enter');
+  await expect(page).toHaveURL(/\/app\/actions\/[^/]+/);
+});
+
+test('action detail shows linked case recommendation and policy boundary', async ({ page }) => {
+  const action = await db.outboundAction.findFirstOrThrow({
+    where: { case: { ref: quorumRef } },
+    select: { id: true },
+  });
+  await login(page, identities.viewer);
+  await page.goto(`${base}/app/actions/${action.id}`);
+  await expect(page.getByRole('heading', { name: 'Gate decision' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Evidence and conflicts' })).toBeVisible();
+  await expect(page.getByText('AGENT RECOMMENDATION')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Policy boundary' })).toBeVisible();
+});
+
 test('case-loop and sod: reviewer approves, another reviewer blocks, then verifies', async ({
   browser,
 }) => {
