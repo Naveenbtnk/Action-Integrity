@@ -243,8 +243,8 @@ effects. `/trust` describes the operating model, roles, audit chain and known ga
 
 **Sign in — `/login`** — purpose: one way in, no way to create an identity.
 
-Layout: at ≥ 1024 px a compact centered two-column access shell with the product claim and a
-three-step control sequence beside the sign-in form. Below 1024 px, the form comes first and the
+Layout: at ≥ 1200 CSS px a compact centered two-column access shell with the product claim and a
+three-step control sequence beside the sign-in form. Below 1200 CSS px, the form comes first and the
 explanation follows. Keep a single `h1` in the form. No carousel or testimonial.
 
 Card, in order:

@@ -246,8 +246,8 @@
 }
 .pub-hud-core {
   z-index: 2;
-  width: 38%;
-  height: 38%;
+  width: 42%;
+  height: 42%;
   border: 1px solid #f04554;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, #40131a, #12070a 70%);
@@ -269,15 +269,9 @@
   text-shadow: 0 0 10px #e32735;
 }
 .pub-hud-core strong {
-  font-size: 8px;
+  font-size: clamp(8px, 0.75vw, 10px);
   line-height: 1.2;
   font-weight: 400;
-  white-space: nowrap;
-}
-.pub-hud-core small {
-  font-size: 5px;
-  line-height: 1.2;
-  color: #b9adaf;
   white-space: nowrap;
 }
 .pub-hud-radar-dot {

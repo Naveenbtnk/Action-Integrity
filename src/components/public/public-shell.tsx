@@ -101,7 +101,6 @@ export function SignalVisual({ compact = false }: { compact?: boolean }) {
           <div className="pub-hud-core">
             <span className="pub-hud-hold-icon">H</span>
             <strong>ACTION HELD</strong>
-            <small>TARGET STATE UNCHANGED</small>
           </div>
           <span className="pub-hud-radar-dot pub-hud-dot-a" />
           <span className="pub-hud-radar-dot pub-hud-dot-b" />
