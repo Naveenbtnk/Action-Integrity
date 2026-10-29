@@ -2,8 +2,15 @@ import { ShieldX } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
+import { pagePrincipal } from '@/lib/auth/page-principal';
 
-export default function ForbiddenPage() {
+export default async function ForbiddenPage({
+  searchParams,
+}: {
+  readonly searchParams: Promise<{ permission?: string; next?: string }>;
+}) {
+  const user = await pagePrincipal();
+  const params = await searchParams;
   return (
     <main id="main-content" className="grid min-h-screen place-items-center px-6">
       <section className="max-w-lg border border-border bg-card p-8 text-center">
@@ -16,8 +23,24 @@ export default function ForbiddenPage() {
           Access is denied by default. Contact an administrator if your assigned responsibilities
           require this capability.
         </p>
-        <Button render={<Link href="/" />} variant="outline" className="mt-8">
-          Return home
+        <dl className="mt-6 space-y-2 border-t border-border pt-5 text-left text-sm">
+          <div>
+            <dt className="text-operational-muted">Required permission</dt>
+            <dd className="font-mono">{params.permission ?? 'Unknown'}</dd>
+          </div>
+          <div>
+            <dt className="text-operational-muted">Held roles</dt>
+            <dd className="font-mono">{user.roles.join(', ')}</dd>
+          </div>
+          {params.next && (
+            <div>
+              <dt className="text-operational-muted">Requested route</dt>
+              <dd className="break-all font-mono">{params.next}</dd>
+            </div>
+          )}
+        </dl>
+        <Button render={<Link href="/app/overview" />} variant="outline" className="mt-8">
+          Return to overview
         </Button>
       </section>
     </main>

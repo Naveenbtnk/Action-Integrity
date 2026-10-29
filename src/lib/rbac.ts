@@ -150,6 +150,8 @@ export const ROUTE_PERMISSIONS: ReadonlyArray<{
   permission: Permission | 'public';
   rateLimit: string;
 }> = [
+  { method: 'GET', pattern: '/api/auth/*', permission: 'public', rateLimit: 'read' },
+  { method: 'POST', pattern: '/api/auth/*', permission: 'public', rateLimit: 'auth' },
   { method: 'GET', pattern: '/api/v1/health', permission: 'public', rateLimit: 'read' },
   {
     method: 'POST',

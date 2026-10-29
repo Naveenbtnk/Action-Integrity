@@ -19,19 +19,22 @@ export async function enforceAdapterLimit(
     | 'ingest'
     | 'read'
     | 'write'
-    | 'investigate',
+    | 'investigate'
+    | 'auth',
   principal: string,
 ): Promise<void> {
   const limit =
-    group === 'investigate'
-      ? 3
-      : group === 'integrity'
-        ? 6
-        : group === 'ingest'
-          ? env.RATE_LIMIT_INGEST_PER_MIN
-          : group === 'target-write' || group === 'write'
-            ? 60
-            : 300;
+    group === 'auth'
+      ? 10
+      : group === 'investigate'
+        ? 3
+        : group === 'integrity'
+          ? 6
+          : group === 'ingest'
+            ? env.RATE_LIMIT_INGEST_PER_MIN
+            : group === 'target-write' || group === 'write'
+              ? 60
+              : 300;
   const windowMs = group === 'investigate' ? 600_000 : 60_000;
   const bucket = Math.floor(Date.now() / windowMs);
   const key = `aic:limit:${group}:${principal}:${bucket}`;

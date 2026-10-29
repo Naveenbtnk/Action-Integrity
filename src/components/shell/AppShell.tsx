@@ -1,147 +1,97 @@
-import {
-  Activity,
-  Blocks,
-  BookOpenCheck,
-  ChartNoAxesCombined,
-  CircleGauge,
-  FileClock,
-  GitBranch,
-  KeyRound,
-  LifeBuoy,
-  ListChecks,
-  Search,
-  Settings,
-  ShieldCheck,
-} from 'lucide-react';
+import { Activity } from 'lucide-react';
 import Link from 'next/link';
+
+import { AppNavigation } from '@/components/shell/AppNavigation';
+import { GlobalSearch } from '@/components/shell/GlobalSearch';
+import type { Role } from '@/generated/prisma/enums';
+import { signOut } from '@/lib/auth/config';
+import type { Permission } from '@/lib/rbac';
 
 import type { ReactNode } from 'react';
 
-type ShellPermission =
-  | 'action:read'
-  | 'audit:read'
-  | 'case:read'
-  | 'contract:read'
-  | 'kpi:read'
-  | 'ops:read'
-  | 'policy:read'
-  | 'user:read';
-
 interface AppShellProps {
-  readonly can: (permission: ShellPermission) => boolean;
+  readonly can: (permission: Permission) => boolean;
   readonly children: ReactNode;
+  readonly user: { name: string; roles: Role[] };
+  readonly environment: string;
+  readonly mode: string;
+  readonly policy: { version: string; hash: string } | null;
 }
 
-const navigation = [
-  {
-    label: 'Monitor',
-    items: [
-      { label: 'Overview', icon: CircleGauge, permission: 'kpi:read' as const },
-      { label: 'Action Queue', icon: ListChecks, permission: 'action:read' as const },
-    ],
-  },
-  {
-    label: 'Investigate',
-    items: [
-      { label: 'Investigations', icon: Search, permission: 'case:read' as const },
-      { label: 'Evidence Explorer', icon: GitBranch, permission: 'case:read' as const },
-    ],
-  },
-  {
-    label: 'Resolve',
-    items: [
-      { label: 'Recoveries', icon: LifeBuoy, permission: 'case:read' as const },
-      { label: 'Verification', icon: BookOpenCheck, permission: 'case:read' as const },
-    ],
-  },
-  {
-    label: 'Control',
-    items: [
-      { label: 'Policies', icon: ShieldCheck, permission: 'policy:read' as const },
-      { label: 'Integrations', icon: Blocks, permission: 'contract:read' as const },
-      { label: 'Audit', icon: FileClock, permission: 'audit:read' as const },
-    ],
-  },
-  {
-    label: 'Improve',
-    items: [{ label: 'Analytics', icon: ChartNoAxesCombined, permission: 'kpi:read' as const }],
-  },
-  {
-    label: 'Administration',
-    items: [
-      { label: 'Access', icon: KeyRound, permission: 'user:read' as const },
-      { label: 'Operations', icon: Settings, permission: 'ops:read' as const },
-    ],
-  },
-] as const;
+export function AppShell({ can, children, user, environment, mode, policy }: AppShellProps) {
+  const permissions = (['case:read', 'action:read', 'policy:read', 'audit:read'] as const).filter(
+    can,
+  );
 
-export function AppShell({ can, children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 hidden w-[248px] border-r border-border bg-card lg:block">
-        <div className="flex h-14 items-center border-b border-border px-5">
-          <Link href="/app" className="font-medium tracking-[-0.04em]">
+      <aside className="fixed inset-y-0 left-0 hidden w-[248px] border-r border-border bg-card xl:flex xl:flex-col">
+        <div className="flex h-16 items-center border-b border-border px-6">
+          <Link href="/app/overview" className="text-sm font-medium tracking-[-.045em]">
             ACTION INTEGRITY
           </Link>
         </div>
-        <nav aria-label="Primary" className="h-[calc(100vh-3.5rem)] overflow-y-auto px-3 py-5">
-          {navigation.map((group) => {
-            const visibleItems = group.items.filter((item) => can(item.permission));
-
-            if (visibleItems.length === 0) return null;
-
-            return (
-              <div key={group.label} className="mb-6">
-                <p data-instrument className="px-2 text-[11px] text-muted-foreground">
-                  {group.label.toUpperCase()}
-                </p>
-                <div className="mt-2 space-y-1">
-                  {visibleItems.map((item) => (
-                    <div
-                      key={item.label}
-                      className="flex min-h-9 items-center gap-3 rounded-md px-2 text-sm text-muted-foreground"
-                    >
-                      <item.icon className="size-4" aria-hidden="true" />
-                      <span>{item.label}</span>
-                      <span data-instrument className="ml-auto text-[10px]">
-                        SOON
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </nav>
+        <div className="flex-1 overflow-y-auto px-3 py-5">
+          <AppNavigation permissions={[...permissions]} />
+        </div>
+        <div className="border-t border-border px-6 py-5">
+          <p data-instrument className="text-[10px] text-operational-muted">
+            CONTROL PLANE / {environment}
+          </p>
+        </div>
       </aside>
-
-      <div className="lg:pl-[248px]">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background px-5 lg:px-8">
+      <div className="xl:pl-[248px]">
+        <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border bg-background px-5 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <Activity className="size-4 text-operational-success" aria-hidden="true" />
-            <span data-instrument className="text-xs text-muted-foreground">
-              FOUNDATION MODE
+            <span data-instrument className="text-xs text-operational-muted">
+              {environment}
             </span>
+            <span className="border-l border-border pl-3 font-mono text-[11px] text-operational-muted">
+              {mode}
+            </span>
+            {policy && (
+              <Link
+                href="/app/policies"
+                title={policy.hash}
+                className="hidden border-l border-border pl-3 font-mono text-[11px] text-operational-muted hover:text-foreground sm:inline"
+              >
+                POLICY {policy.version}
+              </Link>
+            )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 text-xs">
+            <GlobalSearch />
+            <span className="hidden text-operational-muted md:inline">{user.name}</span>
             <span
               data-instrument
-              className="rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground"
+              className="hidden border border-border px-2 py-1 text-[10px] text-operational-muted sm:inline"
             >
-              DEMO
+              {user.roles.join(' · ')}
             </span>
-            <span
-              data-instrument
-              className="hidden rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground sm:block"
+            <form
+              action={async () => {
+                'use server';
+                await signOut({ redirectTo: '/login' });
+              }}
             >
-              POLICY 2026.10.1
-            </span>
+              <button className="border border-border px-3 py-2 text-xs hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
+                Sign out
+              </button>
+            </form>
           </div>
         </header>
-        <div className="border-b border-operational-warning/40 bg-operational-warning/10 px-5 py-3 text-sm text-operational-warning lg:px-8">
-          Authentication and business workflows are intentionally unavailable in the foundation
-          phase.
+        <div className="border-b border-border xl:hidden">
+          <AppNavigation permissions={[...permissions]} compact />
         </div>
+        {user.roles.includes('ADMIN') && (
+          <div
+            role="status"
+            className="border-b border-operational-warning/50 bg-operational-warning/10 px-5 py-2 text-sm text-operational-warning lg:px-8"
+          >
+            Platform administrators do not decide business actions.
+          </div>
+        )}
         {children}
       </div>
     </div>

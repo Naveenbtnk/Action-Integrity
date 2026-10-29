@@ -83,17 +83,17 @@ const stages = [
 </BaseLayout>
 
 <style>
-  .section-pad { padding: 112px 0; }
+  .section-pad { padding: 88px 0; }
   .hero { min-height: min(800px, calc(100svh - 72px)); position: relative; overflow: hidden; border-bottom: 1px solid var(--steel); background: linear-gradient(90deg, transparent calc(50% - 1px), rgba(56,46,48,.32) 50%, transparent calc(50% + 1px)), repeating-linear-gradient(0deg, transparent 0 79px, rgba(56,46,48,.18) 80px), repeating-linear-gradient(90deg, transparent 0 79px, rgba(56,46,48,.15) 80px), var(--carbon); }
   .hero::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--signal); }
-  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(420px, .85fr); gap: 72px; min-height: 660px; align-items: center; }
-  .hero-content { padding: 70px 0 90px; }
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(420px, .85fr); gap: 48px; min-height: 620px; align-items: center; }
+  .hero-content { padding: 58px 0 70px; }
   .hero-rule { width: 30px; height: 1px; background: var(--steel); }
-  h1 { font-size: clamp(48px, 5.2vw, 72px); line-height: 1.04; letter-spacing: -.055em; font-weight: 500; margin: 30px 0 25px; max-width: 740px; }
+  h1 { font-size: clamp(42px, 4.3vw, 60px); line-height: 1.07; letter-spacing: -.05em; font-weight: 500; margin: 24px 0 20px; max-width: 700px; }
   h1 em { color: var(--signal); font-style: normal; }
   .hero-lede { max-width: 560px; color: var(--muted); line-height: 1.65; font-size: 18px; }
   .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 38px; }
-  .hero-footnote { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--slate); font: 10px var(--font-mono); margin-top: 70px; letter-spacing: 0; }
+  .hero-footnote { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--slate); font: 10px var(--font-mono); margin-top: 48px; letter-spacing: 0; }
   .pulse-dot { width: 6px; height: 6px; background: var(--success); }
   .divider { color: var(--steel); }
   .control-panel { align-self: center; border: 1px solid var(--steel); background: rgba(21,14,15,.98); box-shadow: 22px 22px 0 rgba(0,0,0,.3); }
@@ -124,7 +124,7 @@ const stages = [
   .panel-evidence p { color: var(--muted); line-height: 1.6; font-size: 13px; margin: 12px 0 0; }
   .hero-bottom { display: flex; justify-content: space-between; border-top: 1px solid var(--steel); padding: 20px 0; color: var(--slate); font: 10px var(--font-mono); }
   .problem { background: var(--graphite); }
-  .problem-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 100px; }
+  .problem-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 64px; }
   .problem-copy { padding-top: 24px; color: var(--muted); line-height: 1.7; font-size: 16px; }
   .problem-copy p:first-child { margin-top: 0; color: var(--chalk); }
   .comparison { display: grid; grid-template-columns: 1fr 1fr; margin-top: 62px; border: 1px solid var(--steel); }
@@ -136,16 +136,16 @@ const stages = [
   .comparison-result { margin-top: auto; color: var(--warning); font: 10px var(--font-mono); }
   .comparison-side.after { background: #170d0f; }
   .comparison-side.after .comparison-result { color: var(--success); }
-  .section-intro { display: flex; justify-content: space-between; align-items: end; gap: 70px; margin-bottom: 54px; }
+  .section-intro { display: flex; justify-content: space-between; align-items: end; gap: 48px; margin-bottom: 40px; }
   .section-intro .section-copy { max-width: 390px; margin: 0; }
   .stage-grid { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); margin: 0; padding: 0; border-top: 1px solid var(--steel); border-left: 1px solid var(--steel); }
-  .stage { min-height: 232px; border-bottom: 1px solid var(--steel); border-right: 1px solid var(--steel); padding: 28px; transition: background .2s; }
+  .stage { min-height: 200px; border-bottom: 1px solid var(--steel); border-right: 1px solid var(--steel); padding: 24px; transition: background .2s; }
   .stage:hover { background: var(--graphite); }
   .step-num { display: flex; justify-content: space-between; color: var(--signal); font-size: 11px; }
-  .stage h3 { font-size: 24px; font-weight: 500; margin: 42px 0 10px; }
+  .stage h3 { font-size: 22px; font-weight: 500; margin: 30px 0 10px; }
   .stage p { max-width: 275px; color: var(--muted); line-height: 1.55; font-size: 14px; margin: 0; }
   .principles { background: var(--graphite); border-block: 1px solid var(--steel); }
-  .principles-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 100px; }
+  .principles-grid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 64px; }
   .text-link { display: inline-flex; align-items: center; gap: 35px; margin-top: 32px; padding-bottom: 10px; border-bottom: 1px solid var(--signal); font-size: 14px; }
   .text-link span { color: var(--signal); }
   .principle-list { border-top: 1px solid var(--steel); }

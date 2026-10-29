@@ -190,8 +190,8 @@ otherwise plain-language impact) · user menu with every held role and `Sign out
 
 ## 4. Application shell
 
-- **Left rail:** 248 px expanded, 72 px collapsed.
-- **Top utility bar:** 56 px.
+- **Left rail:** 248 px at 1280 px and wider. At smaller widths, use a single horizontally scrollable section navigation beneath the utility bar.
+- **Top utility bar:** 64 px minimum height; it may wrap when account metadata requires more space.
 - **Main content:** fluid from 1024 px; gutters 24 px at 1024–1279, 32 px at 1280–1599, 40 px at
   1600+; maximum 1600 px for overview and forms; queue and graph pages may use full width.
 - **Context rail:** optional 360 px right rail on action, investigation, recovery and verification
@@ -203,7 +203,8 @@ Responsive:
 | Width | Behaviour |
 |---|---|
 | ≥ 1440 px | rail + content + context rail |
-| 1024–1439 px | collapsible rail; context rail becomes a sheet |
+| 1280–1439 px | rail + content; context rail may stack beneath the case body |
+| 1024–1279 px | horizontal section navigation + full-width content; context rail stacks beneath the case body |
 | 768–1023 px | read/triage layout; tables become prioritised cards; graph opens full screen |
 | < 768 px | companion mode: alerts, status, approval review. Policy editing, graph manipulation and recovery execution are desktop-only |
 
