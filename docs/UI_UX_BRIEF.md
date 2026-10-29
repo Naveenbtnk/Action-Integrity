@@ -245,7 +245,7 @@ effects. `/trust` describes the operating model, roles, audit chain and known ga
 
 Layout: at ≥ 1200 CSS px a centered two-column access shell. A short welcome message sits beside
 a translucent sign-in panel, with a decorative vector ribbon behind both. Below 1200 CSS px,
-the form comes first and the message follows. Keep a single `h1` in the form. The ribbon stops
+show one centered sign-in panel and hide the welcome message. Keep a single `h1` in the form. The ribbon stops
 moving under `prefers-reduced-motion`; fields and focus indicators remain clear over the glass.
 No carousel, testimonial or self-registration affordance.
 

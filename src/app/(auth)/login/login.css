@@ -1,7 +1,8 @@
 .login-page {
   min-height: 100svh;
   display: grid;
-  place-items: center;
+  align-items: safe center;
+  justify-items: center;
   padding: 32px;
   background:
     radial-gradient(ellipse 52% 60% at 50% 70%, rgba(82, 18, 31, 0.15), transparent 85%), #202022;
@@ -220,7 +221,7 @@
     padding: 20px;
   }
   .login-shell {
-    width: min(100%, 620px);
+    width: min(100%, 520px);
     min-height: 0;
   }
   .login-topbar {
@@ -233,26 +234,18 @@
   }
   .login-form {
     order: 1;
-    padding: 12px 28px 26px;
+    padding: 12px 24px 26px;
   }
   .login-form section {
     max-width: none;
   }
   .login-story {
-    order: 2;
-    padding: 10px 40px 60px;
-  }
-  .login-story h2 {
-    font-size: 36px;
-  }
-  .login-description {
-    margin-top: 12px;
-    font-size: 14px;
+    display: none;
   }
   .login-wave {
-    top: 34%;
-    height: 66%;
-    opacity: 0.58;
+    top: 12%;
+    height: 88%;
+    opacity: 0.4;
   }
 }
 @media (max-width: 640px) {
@@ -280,24 +273,15 @@
   .login-form section {
     padding: 25px;
   }
-  .login-story {
-    padding: 12px 28px 65px;
-  }
-  .login-story h2 {
-    font-size: 34px;
-  }
   .login-wave {
-    top: 47%;
-    height: 53%;
-    opacity: 0.46;
+    top: 30%;
+    height: 70%;
+    opacity: 0.34;
   }
 }
 @media (max-width: 380px) {
   .login-form section {
     padding: 22px 18px;
-  }
-  .login-story {
-    padding-inline: 22px;
   }
   .login-brand {
     font-size: 13px;
