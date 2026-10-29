@@ -6,6 +6,8 @@ import { auth } from '@/lib/auth/config';
 import { db } from '@/lib/db';
 import { env } from '@/lib/env';
 
+import './login.css';
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -31,36 +33,56 @@ export default async function LoginPage({
       ? params.next
       : '/app/overview';
   return (
-    <main id="main-content" className="grid min-h-screen lg:grid-cols-2">
-      <div className="flex min-h-[300px] flex-col justify-between border-b border-border bg-card p-8 lg:min-h-screen lg:border-b-0 lg:border-r lg:p-12">
-        <Link href="/" className="text-sm font-medium tracking-[-0.04em]">
-          ACTION INTEGRITY
-        </Link>
-        <div className="max-w-xl">
-          <p data-instrument className="text-xs text-primary">
-            DETECT / HOLD / VERIFY
-          </p>
-          <h2 className="mt-5 text-4xl font-medium leading-tight lg:text-[clamp(38px,3.2vw,52px)]">
-            Every business action deserves a verified outcome.
-          </h2>
-          <p className="mt-6 max-w-lg text-base leading-7 text-operational-muted">
-            A governed workflow for investigating uncertain data, separating approval from
-            execution, and proving what changed in the target system.
-          </p>
+    <main id="main-content" className="login-page">
+      <div className="login-shell">
+        <div className="login-topbar">
+          <Link href="/" className="login-brand">
+            <span className="login-brand-mark" aria-hidden="true" />
+            ACTION<span>/</span>INTEGRITY
+          </Link>
+          <span data-instrument>SECURE ENTRY / 01</span>
         </div>
-        <p data-instrument className="text-xs text-operational-muted">
-          EVIDENCE BEFORE CLOSURE
-        </p>
-      </div>
-      <div className="grid place-items-center px-6 py-14 lg:px-12">
-        <div className="w-full max-w-md">
-          <SignInPanel
-            nextPath={nextPath}
-            credentialsEnabled={env.NODE_ENV !== 'production' && env.AUTH_CREDENTIALS_ENABLED}
-            ssoEnabled={Boolean(env.OIDC_ISSUER && env.OIDC_CLIENT_ID && env.OIDC_CLIENT_SECRET)}
-            reason={params.error ? 'provider_unreachable' : params.reason}
-            retryAfter={params.retry}
-          />
+        <div className="login-grid">
+          <div className="login-story">
+            <p data-instrument className="login-kicker">
+              THE CONTROL ROOM
+            </p>
+            <h2>Decisions need evidence. Outcomes need proof.</h2>
+            <p className="login-description">
+              Enter the workspace for investigating conflicts, approving a governed response, and
+              verifying the customer state.
+            </p>
+            <div className="login-sequence" aria-label="Control sequence">
+              <div>
+                <span>01</span>
+                <strong>DETECT</strong>
+                <small>Find the conflicting signal</small>
+              </div>
+              <div>
+                <span>02</span>
+                <strong>HOLD</strong>
+                <small>Contain the exposed action</small>
+              </div>
+              <div>
+                <span>03</span>
+                <strong>VERIFY</strong>
+                <small>Prove the business outcome</small>
+              </div>
+            </div>
+          </div>
+          <div className="login-form">
+            <SignInPanel
+              nextPath={nextPath}
+              credentialsEnabled={env.NODE_ENV !== 'production' && env.AUTH_CREDENTIALS_ENABLED}
+              ssoEnabled={Boolean(env.OIDC_ISSUER && env.OIDC_CLIENT_ID && env.OIDC_CLIENT_SECRET)}
+              reason={params.error ? 'provider_unreachable' : params.reason}
+              retryAfter={params.retry}
+            />
+          </div>
+        </div>
+        <div className="login-bottom" data-instrument>
+          <span>EVIDENCE BEFORE ACTION</span>
+          <span>VERIFICATION BEFORE CLOSURE</span>
         </div>
       </div>
     </main>

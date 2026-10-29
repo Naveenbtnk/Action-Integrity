@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import './public.css';
+import './public-hud.css';
 
 export function PublicShell({
   children,
@@ -69,35 +70,64 @@ export function SignalVisual({ compact = false }: { compact?: boolean }) {
     <div
       className={`pub-signal ${compact ? 'pub-signal-compact' : ''}`}
       role="img"
-      aria-label="An unreliable source signal is stopped before it can trigger an exposed action"
+      aria-label="Illustration: a conflicting source signal is detected, an exposed action is held, and recovery awaits verified evidence"
     >
-      <div className="pub-signal-glow" aria-hidden="true" />
-      <div className="pub-signal-ring pub-signal-ring-one" aria-hidden="true" />
-      <div className="pub-signal-ring pub-signal-ring-two" aria-hidden="true" />
-      <div className="pub-signal-axis" aria-hidden="true">
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="pub-signal-node pub-node-source">
-        <span>01 / SOURCE</span>
-        <strong>CONFLICT DETECTED</strong>
-        <small>BILLING · PLAN STATUS</small>
-      </div>
-      <div className="pub-signal-node pub-node-action">
-        <span>02 / ACTION</span>
-        <strong>ACCESS REVOKE</strong>
-        <small>PROPOSED WRITE</small>
-      </div>
-      <div className="pub-signal-core">
-        <span className="pub-core-icon" aria-hidden="true">
-          ⊣
+      <div className="pub-hud-header" aria-hidden="true">
+        <span>CONTROL TRACE / AIC-001</span>
+        <span>
+          <i /> CONFLICT DETECTED
         </span>
-        <strong>ACTION HELD</strong>
-        <small>TARGET STATE UNCHANGED</small>
       </div>
-      <div className="pub-signal-caption">
-        <span className="pub-red-square" /> EVIDENCE REQUIRED BEFORE RELEASE
+      <div className="pub-hud-content" aria-hidden="true">
+        <div className="pub-hud-panel pub-hud-panel-left">
+          <span className="pub-hud-panel-label">EXPOSURE / RISK</span>
+          <div className="pub-hud-bars">
+            {[46, 71, 58, 85, 36].map((height, index) => (
+              <span key={index} style={{ '--bar-height': `${height}%` } as React.CSSProperties} />
+            ))}
+          </div>
+          <span className="pub-hud-panel-rule" />
+          <strong>HELD STATUS: ACTIVE</strong>
+          <small>Source meaning disputed</small>
+          <small>Target write blocked</small>
+        </div>
+        <div className="pub-hud-radar">
+          <div className="pub-hud-crosshair" />
+          <div className="pub-hud-scan" />
+          <div className="pub-hud-ring pub-hud-ring-outer" />
+          <div className="pub-hud-ring pub-hud-ring-middle" />
+          <div className="pub-hud-ring pub-hud-ring-inner" />
+          <div className="pub-hud-ticks" />
+          <div className="pub-hud-core">
+            <span className="pub-hud-hold-icon">H</span>
+            <strong>ACTION HELD</strong>
+            <small>TARGET STATE UNCHANGED</small>
+          </div>
+          <span className="pub-hud-radar-dot pub-hud-dot-a" />
+          <span className="pub-hud-radar-dot pub-hud-dot-b" />
+          <span className="pub-hud-radar-dot pub-hud-dot-c" />
+        </div>
+        <div className="pub-hud-panel pub-hud-panel-right">
+          <span className="pub-hud-panel-label">RECOVERY / VERIFY</span>
+          <div className="pub-hud-matrix">
+            {Array.from({ length: 24 }, (_, index) => (
+              <i
+                key={index}
+                className={index % 7 === 0 ? 'is-alert' : index % 3 === 0 ? 'is-ready' : ''}
+              />
+            ))}
+          </div>
+          <span className="pub-hud-panel-rule" />
+          <strong>RELEASE GATE: CLOSED</strong>
+          <small>Evidence review required</small>
+          <small>Verification pending</small>
+        </div>
+      </div>
+      <div className="pub-hud-footer" aria-hidden="true">
+        <span>
+          <i /> EVIDENCE REQUIRED BEFORE RELEASE
+        </span>
+        <small>ILLUSTRATIVE VIEW</small>
       </div>
     </div>
   );

@@ -234,17 +234,18 @@ or user row in the HTML. They share the tokens, type scale and 4 px radius, and 
 **`/` and `/trust`** — purpose: explain the loop and establish trust. Sections: hero *"Stop bad data
 before it becomes a bad business action."*; restrained loop Detect → Hold → Investigate → Decide →
 Recover → Verify; before/after entitlement scenario; deterministic controls versus agentic reasoning;
-audit and human-approval proof; CTA *"Open sandbox"*. One Aceternity background/grid treatment and at
-most one Magic UI animation. No glows, blur fields, marquees or gradient buttons. The authenticated
-product contains none of these. `/trust` describes the operating model, roles, audit chain and known
-gaps from `SECURITY.md` §11 and `PRODUCTION_READINESS.md` §7 — the gaps stay visible.
+audit and human-approval proof; CTA *"Open control room"*. The public hero uses one illustrative
+control-room visual with a held-action radar, synthetic exposure and verification indicators.
+Animation is limited to transform and opacity and disappears under `prefers-reduced-motion`.
+The illustration must not imply live telemetry. The authenticated product contains none of these
+effects. `/trust` describes the operating model, roles, audit chain and known gaps from
+`SECURITY.md` §11 and `PRODUCTION_READINESS.md` §7 — the gaps stay visible.
 
 **Sign in — `/login`** — purpose: one way in, no way to create an identity.
 
-Layout: at ≥ 1024 px two panes — a brand pane (lockup, the one-line claim, the loop as four steps, one
-audit sentence, environment chip) and a 400 px sign-in card on carbon; below 1024 px the brand pane
-collapses to the lockup plus one line and the card centres; below 768 px the card is full-bleed. One
-`h1`: *"Sign in to Action Integrity."* No illustration, carousel, testimonial or marketing gradient.
+Layout: at ≥ 1024 px a compact centered two-column access shell with the product claim and a
+three-step control sequence beside the sign-in form. Below 1024 px, the form comes first and the
+explanation follows. Keep a single `h1` in the form. No carousel or testimonial.
 
 Card, in order:
 

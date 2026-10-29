@@ -232,144 +232,6 @@
   color: #858182;
   font-size: 10px;
 }
-.pub-signal {
-  min-height: 400px;
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  place-items: center;
-  font-size: 10px;
-}
-.pub-signal-glow {
-  position: absolute;
-  width: 75%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(227, 39, 53, 0.17),
-    rgba(227, 39, 53, 0.03) 45%,
-    transparent 70%
-  );
-  filter: blur(16px);
-}
-.pub-signal-ring {
-  position: absolute;
-  width: 260px;
-  height: 260px;
-  border: 1px solid rgba(227, 39, 53, 0.28);
-  border-radius: 50%;
-}
-.pub-signal-ring-two {
-  width: 360px;
-  height: 360px;
-  border-color: rgba(176, 171, 173, 0.14);
-}
-.pub-signal-ring::before,
-.pub-signal-ring::after {
-  content: '';
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  background: var(--pub-red);
-  border-radius: 50%;
-  left: 50%;
-  top: -3px;
-}
-.pub-signal-ring-two::before {
-  background: #858182;
-}
-.pub-signal-axis {
-  position: absolute;
-  width: 90%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--pub-red), transparent);
-  transform: rotate(-27deg);
-  opacity: 0.6;
-}
-.pub-signal-axis span {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  top: -3px;
-  border-radius: 50%;
-  background: var(--pub-red);
-}
-.pub-signal-axis span:nth-child(1) {
-  left: 17%;
-}
-.pub-signal-axis span:nth-child(2) {
-  left: 50%;
-}
-.pub-signal-axis span:nth-child(3) {
-  left: 83%;
-}
-.pub-signal-node {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  gap: 4px;
-  padding-left: 12px;
-  border-left: 2px solid var(--pub-red);
-  text-shadow: 0 1px 12px #0b0405;
-}
-.pub-signal-node span,
-.pub-signal-node small {
-  color: #b0abad;
-  font-size: 9px;
-}
-.pub-signal-node strong {
-  font-size: 11px;
-  font-weight: 400;
-  color: #fff;
-}
-.pub-node-source {
-  left: 3%;
-  top: 19%;
-}
-.pub-node-action {
-  right: 0;
-  bottom: 20%;
-}
-.pub-signal-core {
-  position: relative;
-  z-index: 3;
-  width: 152px;
-  height: 152px;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  background: radial-gradient(circle at 35% 30%, rgba(227, 39, 53, 0.3), rgba(20, 8, 11, 0.97) 68%);
-  border: 1px solid rgba(227, 39, 53, 0.75);
-  box-shadow:
-    0 0 0 8px rgba(227, 39, 53, 0.04),
-    0 0 50px rgba(227, 39, 53, 0.15);
-}
-.pub-core-icon {
-  color: var(--pub-red);
-  font-size: 31px;
-  line-height: 1;
-}
-.pub-signal-core strong {
-  font-size: 11px;
-  font-weight: 400;
-}
-.pub-signal-core small {
-  color: #b0abad;
-  font-size: 8px;
-}
-.pub-signal-caption {
-  position: absolute;
-  bottom: 5%;
-  color: #b0abad;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 9px;
-}
 .pub-section {
   padding: 86px 0;
 }
@@ -628,38 +490,6 @@
   line-height: 1.65;
   margin: 20px 0 0;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .pub-signal-ring-one {
-    animation: pub-spin 28s linear infinite;
-  }
-  .pub-signal-ring-two {
-    animation: pub-spin 45s linear infinite reverse;
-  }
-  .pub-signal-core {
-    animation: pub-breathe 4s ease-in-out infinite;
-  }
-  .pub-signal-axis span:nth-child(2) {
-    animation: pub-pulse 2.4s ease-in-out infinite;
-  }
-}
-@keyframes pub-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-@keyframes pub-breathe {
-  50% {
-    box-shadow:
-      0 0 0 15px rgba(227, 39, 53, 0.025),
-      0 0 65px rgba(227, 39, 53, 0.24);
-  }
-}
-@keyframes pub-pulse {
-  50% {
-    opacity: 0.25;
-    transform: scale(2);
-  }
-}
 @media (max-width: 900px) {
   .pub-hero-grid {
     grid-template-columns: 1fr;
@@ -667,9 +497,6 @@
   }
   .pub-hero-copy {
     padding: 55px 0 15px;
-  }
-  .pub-signal {
-    min-height: 360px;
   }
   .pub-trust-hero .pub-signal {
     display: none;
@@ -718,17 +545,6 @@
   }
   .pub-lede {
     font-size: 15px;
-  }
-  .pub-signal {
-    min-height: 320px;
-    transform: scale(0.83);
-    margin: -20px -25px;
-  }
-  .pub-node-source {
-    left: 0;
-  }
-  .pub-node-action {
-    right: 0;
   }
   .pub-section {
     padding: 65px 0;

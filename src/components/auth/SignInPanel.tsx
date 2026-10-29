@@ -68,43 +68,43 @@ export function SignInPanel({
 
   return (
     <section
-      className="w-full border border-border bg-card p-7 lg:p-10"
+      className="w-full border border-border bg-card p-6 lg:p-7"
       aria-labelledby="sign-in-title"
     >
       <div className="flex size-11 items-center justify-center border border-border bg-background">
         <LockKeyhole className="size-5 text-primary" aria-hidden="true" />
       </div>
-      <p data-instrument className="mt-8 text-xs text-operational-muted">
+      <p data-instrument className="mt-5 text-xs text-operational-muted">
         CONTROLLED ACCESS / 01
       </p>
-      <h1 id="sign-in-title" className="mt-3 text-[28px] font-medium leading-tight">
+      <h1 id="sign-in-title" className="mt-2 text-[26px] font-medium leading-tight">
         Enter the control room
       </h1>
-      <p className="mt-4 text-sm leading-6 text-operational-muted">
+      <p className="mt-3 text-sm leading-6 text-operational-muted">
         Review evidence, record decisions, and verify the business state after every action.
       </p>
-      <div role="alert" className={error ? 'mt-6 border border-primary p-3 text-sm' : 'sr-only'}>
+      <div role="alert" className={error ? 'mt-4 border border-primary p-3 text-sm' : 'sr-only'}>
         {error}
       </div>
       {ssoEnabled ? (
         <Button
-          className="mt-8 h-10 w-full justify-between rounded-[4px] px-4"
+          className="mt-6 h-10 w-full justify-between rounded-[4px] px-4"
           onClick={() => void signIn('corporate', { callbackUrl: nextPath })}
           disabled={busy}
         >
           Continue with SSO <ArrowRight className="size-4" aria-hidden="true" />
         </Button>
       ) : !credentialsEnabled ? (
-        <p className="mt-8 border border-operational-warning/50 p-3 text-sm text-operational-warning">
+        <p className="mt-6 border border-operational-warning/50 p-3 text-sm text-operational-warning">
           SSO is not configured for this environment.
         </p>
       ) : null}
       {credentialsEnabled && (
-        <div className="mt-8 border-t border-border pt-7">
-          <p data-instrument className="mb-4 text-xs text-operational-muted">
+        <div className="mt-5 border-t border-border pt-5">
+          <p data-instrument className="mb-3 text-xs text-operational-muted">
             LOCAL DEVELOPMENT
           </p>
-          <form onSubmit={(event) => void submitCredentials(event)} className="space-y-4">
+          <form onSubmit={(event) => void submitCredentials(event)} className="space-y-3">
             <label className="block text-sm" htmlFor="login-email">
               Email
             </label>
@@ -138,7 +138,7 @@ export function SignInPanel({
               {busy ? 'Signing in…' : 'Sign in locally'}
             </Button>
           </form>
-          <div className="mt-5 flex flex-wrap gap-2" aria-label="Seeded local accounts">
+          <div className="mt-4 flex flex-wrap gap-2" aria-label="Seeded local accounts">
             {seededEmails.map((item) => (
               <button
                 key={item}
@@ -152,7 +152,7 @@ export function SignInPanel({
           </div>
         </div>
       )}
-      <p className="mt-7 text-xs leading-5 text-operational-muted">
+      <p className="mt-5 text-xs leading-5 text-operational-muted">
         Accounts are provisioned by an administrator. There is no self-service sign-up or password
         reset.
       </p>
