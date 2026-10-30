@@ -11,7 +11,7 @@ Supabase's [Prisma guide](https://supabase.com/docs/guides/database/prisma) reco
 ## Connection
 
 1. Rotate the database password in Supabase if it has been shared in chat or a screenshot. Use only the new password in the local connection URI.
-2. In the Supabase dashboard, open the project and select **Connect → Connection string → Session pooler** (port `5432`). Use the URI for the `postgres` database and fill in the database password locally. URL-encode any reserved characters in the password.
+2. Open the project's [Session pooler connection panel](https://supabase.com/dashboard/project/ikyxoidltualpzklrhmn?showConnect=true&method=session). In **Connect → Connection string**, select **Session pooler** (port `5432`) and copy its URI for the `postgres` database. Fill in the database password locally. URL-encode any reserved characters in the password.
 3. In the ignored local `.env`, set `DATABASE_URL` and `DIRECT_DATABASE_URL` to that session-pooler URI. Do not put either URI in source control, screenshots, logs, or chat.
 4. Keep `NODE_ENV=development` for the local preview. Supabase database hosting does not satisfy the separate production requirements for OIDC, shared rate limiting, workers, external audit anchors, backups, and drills.
 
