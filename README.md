@@ -45,6 +45,7 @@ target writes, or full autonomy.
 | `docs/ARCHITECTURE.md`         | Module contracts, state machine, concurrency, invariants                      |
 | `docs/BACKEND_SCHEMA.md`       | Every table, enum and constraint                                              |
 | `docs/DATABASE.md`             | Migrations, seed, transactions, retention, safety                             |
+| `docs/SUPABASE_SETUP.md`       | Hosted PostgreSQL connection and migration steps for the demo                 |
 | `docs/API.md`                  | Endpoints, envelope, errors, rate limits                                      |
 | `docs/APP_FLOW.md`             | Pages, journeys, states, overlays, edge cases, accessibility                  |
 | `docs/UI_UX_BRIEF.md`          | Frontend specification: IA, routes, tokens, components, motion, accessibility |
