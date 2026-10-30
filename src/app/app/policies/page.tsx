@@ -11,7 +11,7 @@ export default async function PoliciesPage() {
     <PageFrame
       eyebrow="CONTROL / 01"
       title="Policies"
-      description="Read-only policy history and the active version used for deterministic decisions."
+      description="Review policy history and the active rules. Administrators can activate a reviewed draft from its version page."
     >
       {policies.length === 0 ? (
         <div className="border border-border bg-card p-8 text-sm text-operational-muted">
