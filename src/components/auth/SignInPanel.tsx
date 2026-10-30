@@ -20,6 +20,7 @@ const seededEmails = [
   'reviewer2@aic.local',
   'senior@aic.local',
   'viewer@aic.local',
+  'admin@aic.local',
 ];
 
 export function SignInPanel({

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 
 import { PageFrame } from '@/components/console/PageFrame';
+import { PolicyActivation } from '@/components/console/PolicyActivation';
 import { pagePrincipalWith } from '@/lib/auth/page-principal';
 import { db } from '@/lib/db';
 
@@ -9,7 +10,7 @@ export default async function PolicyDetailPage({
 }: {
   readonly params: Promise<{ policyId: string }>;
 }) {
-  await pagePrincipalWith('policy:read');
+  const principal = await pagePrincipalWith('policy:read');
   const { policyId } = await params;
   const policy = await db.policyVersion.findUnique({ where: { id: policyId } });
   if (!policy) notFound();
@@ -17,7 +18,7 @@ export default async function PolicyDetailPage({
     <PageFrame
       eyebrow={`CONTROL / POLICY ${policy.version}`}
       title={`Policy ${policy.version}`}
-      description="The signed document and hash behind the current decision rules. Editing and activation are reserved for a later control phase."
+      description="Review the immutable rule document, registered hash, and version history before activation."
     >
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
         <section className="border border-border bg-card p-6">
@@ -44,6 +45,13 @@ export default async function PolicyDetailPage({
           </dl>
         </aside>
       </div>
+      {policy.status === 'DRAFT' && principal.roles.includes('ADMIN') && (
+        <PolicyActivation
+          version={policy.version}
+          hash={policy.hash}
+          reviewTicket={policy.reviewTicket}
+        />
+      )}
     </PageFrame>
   );
 }
