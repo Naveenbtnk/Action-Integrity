@@ -8,6 +8,21 @@ The Prisma migrations create tables in PostgreSQL's `public` schema. Supabase ex
 
 Supabase's [Prisma guide](https://supabase.com/docs/guides/database/prisma) recommends disabling the Data API when using Prisma alone; its [API security guide](https://supabase.com/docs/guides/api/securing-your-api) documents the default `public` schema privileges.
 
+For a new, dedicated project with an empty `public` schema, revoke Supabase's default API-role grants in the SQL Editor **before** running Prisma migrations:
+
+```sql
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON TABLES FROM anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON FUNCTIONS FROM anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres
+  REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+```
+
+This was applied to the current demo project before its first migration. Verify that no app table is readable by `anon` or `authenticated` after each migration. Do not assume disabling the Data API removes SQL grants.
+
 ## Connection
 
 1. Rotate the database password in [Database Settings](https://supabase.com/dashboard/project/ikyxoidltualpzklrhmn/database/settings) if it has been shared in chat or a screenshot. You may choose your own strong new password. Use only that password in the local connection URI.
@@ -34,5 +49,15 @@ npx prisma migrate status
 ```
 
 The first status command confirms which migrations are pending. `migrate deploy` applies the existing migrations without resetting data. Do not run `prisma migrate reset`, `seed:reset`, `demo:reset`, or integration tests against this hosted project unless you intentionally want their data changes.
+
+## Demo sign-in and policy activation
+
+`npm run seed` installs synthetic data and generates random local passwords. It prints those passwords once; keep terminal output private. If a seeded password is unavailable, reset one account from your own local terminal:
+
+```powershell
+npm run login:reset-local -- admin@aic.local
+```
+
+Use the printed password at `/login`. Local credentials are enabled only in development. The seed deliberately leaves the Phase 0 placeholder policy `2026.10.1` active, so `/api/v1/health` returns 503 until an administrator reviews and activates the `2026.10.2` draft in the Policies workspace. Activation requires its registered hash and review ticket, retires the placeholder, and supersedes existing approvals. Do not edit the old policy or its database row to make health pass; see [ADR-028](DECISIONS.md).
 
 The free Supabase plan pauses after inactivity and does not include automatic backups. Use it for a synthetic-data demo, not as evidence of production readiness. Keep a separate local Docker database for development and destructive tests.
