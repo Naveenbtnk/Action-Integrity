@@ -6,6 +6,7 @@
 
 - `npm run typecheck`, `npm run lint`, `npm run test:unit` (37 tests), and `npm run check:secrets-scope` passed after the Gemini integration.
 - `npm run gemini:check` returned a Zod-valid report with citations to both synthetic records using the configured model. This checks connectivity and response shape, not the quality of a full case investigation or the evaluation fixture set.
+- `npm run test:e2e` passed all eight operator-console browser tests against the development Supabase database. `npm run test:rbac -- ui-routes` passed. A remote-database transaction timeout discovered by the browser test was fixed in the block transition; the test then completed the approval, block and verification loop.
 - `npm run build` compiled and passed TypeScript, then deliberately failed during page-data collection because the production environment gate rejected absent OIDC, Redis, and external anchor settings, plus local credential login and disabled telemetry. The gate was left intact.
 
 ## Blocking work before a real deployment

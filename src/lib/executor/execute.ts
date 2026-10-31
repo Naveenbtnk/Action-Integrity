@@ -168,41 +168,49 @@ export async function executeCase(input: {
         }
       }
       if (input.kind === 'BLOCK') {
-        return db.$transaction(async (raw) => {
-          const tx = raw as Prisma.TransactionClient;
-          const { caseRow, action } = await preconditions(
-            tx,
-            input.caseRef,
-            input.kind,
-            input.actor,
-          );
-          await tx.outboundAction.update({
-            where: { id: action.id },
-            data: { status: OutboundActionStatus.BLOCKED },
-          });
-          await tx.actionHold.updateMany({
-            where: { outboundActionId: action.id, releasedAt: null },
-            data: { releasedAt: new Date(), releasedById: input.actor.id },
-          });
-          await appendAuditEvent(tx, {
-            eventType: 'ACTION_BLOCKED',
-            actorType: ActorType.USER,
-            actorId: input.actor.id,
-            caseId: caseRow.id,
-            payload: { actionRef: action.ref },
-            requestId: input.actor.requestId,
-            traceId: input.actor.traceId,
-          });
-          await transitionCase(tx, caseRow.id, CaseStatus.VERIFYING, transactionActor(input.actor));
-          await enqueue(tx, {
-            eventType: 'CASE_VERIFYING',
-            aggregateType: 'Case',
-            aggregateId: caseRow.id,
-            payload: { caseRef: caseRow.ref, noTargetWrite: true },
-            dedupeKey: `case:${caseRow.id}:${caseRow.reopenCount}:block`,
-          });
-          return { execution: null, noTargetWrite: true, caseStatus: CaseStatus.VERIFYING };
-        });
+        return db.$transaction(
+          async (raw) => {
+            const tx = raw as Prisma.TransactionClient;
+            const { caseRow, action } = await preconditions(
+              tx,
+              input.caseRef,
+              input.kind,
+              input.actor,
+            );
+            await tx.outboundAction.update({
+              where: { id: action.id },
+              data: { status: OutboundActionStatus.BLOCKED },
+            });
+            await tx.actionHold.updateMany({
+              where: { outboundActionId: action.id, releasedAt: null },
+              data: { releasedAt: new Date(), releasedById: input.actor.id },
+            });
+            await appendAuditEvent(tx, {
+              eventType: 'ACTION_BLOCKED',
+              actorType: ActorType.USER,
+              actorId: input.actor.id,
+              caseId: caseRow.id,
+              payload: { actionRef: action.ref },
+              requestId: input.actor.requestId,
+              traceId: input.actor.traceId,
+            });
+            await transitionCase(
+              tx,
+              caseRow.id,
+              CaseStatus.VERIFYING,
+              transactionActor(input.actor),
+            );
+            await enqueue(tx, {
+              eventType: 'CASE_VERIFYING',
+              aggregateType: 'Case',
+              aggregateId: caseRow.id,
+              payload: { caseRef: caseRow.ref, noTargetWrite: true },
+              dedupeKey: `case:${caseRow.id}:${caseRow.reopenCount}:block`,
+            });
+            return { execution: null, noTargetWrite: true, caseStatus: CaseStatus.VERIFYING };
+          },
+          { timeout: 15_000 },
+        );
       }
 
       const snapshot = await db.$transaction(async (raw) => {
