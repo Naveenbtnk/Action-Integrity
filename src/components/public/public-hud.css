@@ -308,27 +308,10 @@
   .pub-hud-scan {
     animation: pub-hud-rotate 12s linear infinite;
   }
-  .pub-hud-ring-outer {
-    animation: pub-hud-rotate 45s linear infinite reverse;
-  }
-  .pub-hud-radar-dot {
-    animation: pub-hud-blink 2.8s ease-in-out infinite;
-  }
-  .pub-hud-dot-b {
-    animation-delay: 0.8s;
-  }
-  .pub-hud-dot-c {
-    animation-delay: 1.6s;
-  }
 }
 @keyframes pub-hud-rotate {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes pub-hud-blink {
-  50% {
-    opacity: 0.2;
   }
 }
 @media (max-width: 900px) {

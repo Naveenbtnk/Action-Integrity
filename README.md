@@ -29,11 +29,12 @@ Deterministic code owns gates, thresholds, approvals, writes and verification. T
 
 ## Production posture
 
-This edition is **production-capable (D2)** when the Phase 13 readiness gate passes on the release
-commit. It is **not production-approved (D3)**: that requires a real IdP, a penetration test, a
-data-processing agreement, an on-call rota and named sign-offs. See
-`docs/PRODUCTION_READINESS.md`. The README never claims SOC 2, HIPAA, zero downtime, exactly-once
-target writes, or full autonomy.
+**Current verdict: local demonstration (D0); neither production-capable (D2) nor
+production-approved (D3).** The release gate is not implemented yet, and this workspace lacks the
+production services and organisational evidence required by `docs/PRODUCTION_READINESS.md`. See
+`docs/DEPLOYMENT_STATUS.md` for the latest verified checks and blockers. D2 requires a passing
+readiness report on the release commit; D3 additionally requires named sign-offs. No SOC 2, HIPAA,
+zero downtime, exactly-once target writes, or full autonomy claim is made.
 
 ## Documentation map
 

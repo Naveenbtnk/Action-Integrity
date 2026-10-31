@@ -107,7 +107,7 @@
 .login-kicker {
   margin-bottom: 18px;
   color: #e77b84;
-  font-size: 10px;
+  font-size: 12px;
 }
 .login-story h2 {
   max-width: 430px;
@@ -195,22 +195,6 @@
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.04);
 }
-@media (prefers-reduced-motion: no-preference) {
-  .login-wave-ribbon,
-  .login-wave-edge {
-    animation: login-wave-drift 14s ease-in-out infinite alternate;
-  }
-  .login-wave-ribbon-alt,
-  .login-wave-edge-alt {
-    animation: login-wave-drift 17s ease-in-out infinite alternate-reverse;
-  }
-}
-@keyframes login-wave-drift {
-  to {
-    transform: translate3d(0, 12px, 0);
-    opacity: 0.65;
-  }
-}
 @media (max-width: 1199px) {
   .login-topbar {
     position: relative;
@@ -242,7 +226,7 @@
     padding: 21px 20px;
   }
   .login-home-link {
-    font-size: 11px;
+    font-size: 12px;
   }
   .login-form {
     padding: 16px 20px 24px;

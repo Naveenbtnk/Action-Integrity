@@ -140,7 +140,7 @@
 .pub-eyebrow,
 .pub-index {
   color: var(--pub-red);
-  font-size: 11px;
+  font-size: 12px;
 }
 .pub-eyebrow {
   display: flex;
@@ -217,7 +217,7 @@
   gap: 10px;
   margin-top: 38px;
   color: #858182;
-  font-size: 10px;
+  font-size: 12px;
 }
 .pub-green-dot {
   width: 6px;
@@ -230,7 +230,7 @@
   border-top: 1px solid var(--pub-steel);
   padding: 17px 0;
   color: #858182;
-  font-size: 10px;
+  font-size: 12px;
 }
 .pub-section {
   padding: 86px 0;
@@ -284,7 +284,7 @@
 .pub-comparison span,
 .pub-comparison small {
   color: #858182;
-  font-size: 10px;
+  font-size: 12px;
 }
 .pub-comparison p {
   font-size: 18px;
@@ -338,7 +338,7 @@
   display: flex;
   justify-content: space-between;
   color: var(--pub-red);
-  font-size: 10px;
+  font-size: 12px;
 }
 .pub-stage-grid h3 {
   font-size: 21px;
@@ -379,7 +379,7 @@
 }
 .pub-principle-list article > span {
   color: var(--pub-red);
-  font-size: 10px;
+  font-size: 12px;
   padding-top: 4px;
 }
 .pub-principle-list h3 {
@@ -430,7 +430,7 @@
 }
 .pub-footer .pub-footer-meta {
   text-align: right;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.7;
   margin: 0;
 }
@@ -455,7 +455,7 @@
 }
 .pub-control-list article > span {
   color: var(--pub-red);
-  font-size: 11px;
+  font-size: 12px;
 }
 .pub-control-list h3 {
   font-size: 19px;
@@ -474,7 +474,7 @@
 }
 .pub-release > span {
   color: #f2a93b;
-  font-size: 10px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -534,7 +534,7 @@
     height: 42px;
   }
   .pub-header-cta {
-    font-size: 10px;
+    font-size: 12px;
     padding: 8px;
   }
   .pub-header-cta span {

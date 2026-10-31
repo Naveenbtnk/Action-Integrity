@@ -239,6 +239,12 @@ claims "production-approved" without the D3 sign-offs; every known gap has an ow
 **Verify:** full rehearsal on a fresh deploy + `npm run readiness -- --level D2`.
 **If skipped:** the pitch depends on the author's laptop and the production claim is unsupported.
 
+## Open release actions (31 October 2026)
+
+- **Phase 10:** implement `audit:verify -- --full` and demonstrate broken-chain detection against the synthetic dataset.
+- **Phase 12:** implement and record failure, load, chaos, and restore drills with commit-bound artifacts; obtain an independent security review of the write path.
+- **Phase 13:** implement the fail-closed `readiness` and deployed-origin `smoke` commands; provision OIDC, Redis, external anchors, OTLP, a dependable worker/scheduler, and release sign-offs. Keep the production environment gate enabled.
+
 ---
 
 ## Dependency graph

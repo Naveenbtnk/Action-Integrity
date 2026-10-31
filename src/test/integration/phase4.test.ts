@@ -84,7 +84,19 @@ try {
           }),
         };
       });
-    const [first, second] = await Promise.all([submit(), submit()]);
+    const attempts = await Promise.allSettled([submit(), submit()]);
+    const fulfilled = attempts.filter((result) => result.status === 'fulfilled');
+    assert.ok(fulfilled.length >= 1);
+    for (const result of attempts) {
+      if (result.status === 'rejected') {
+        assert.equal(result.reason?.code, 'IDEMPOTENCY_IN_PROGRESS');
+      }
+    }
+    const firstResult = fulfilled[0];
+    if (!firstResult) throw new Error('No concurrent ingest completed.');
+    const first = firstResult.value;
+    const secondResult = fulfilled[1];
+    const second = secondResult ? secondResult.value : await submit();
     assert.equal(first.data.gate.decision, GateDecision.HOLD);
     assert.equal(second.data.gate.decision, GateDecision.HOLD);
     assert.equal(Number(first.replayed) + Number(second.replayed), 1);

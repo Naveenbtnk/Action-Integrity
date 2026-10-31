@@ -31,7 +31,7 @@ export function assertRecordMutable(model: string, operation = 'update'): void {
 
 function createPrismaClient() {
   const adapter = new PrismaPg({ connectionString: env.DATABASE_URL });
-  return new PrismaClient({ adapter }).$extends({
+  return new PrismaClient({ adapter, transactionOptions: { timeout: 15_000 } }).$extends({
     name: 'immutable-record-guard',
     query: {
       $allModels: {

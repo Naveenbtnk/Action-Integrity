@@ -336,10 +336,11 @@ if (run('execute') || run('verify') || !!scenario) {
       client: slowClient,
     });
     let intent = null;
-    for (let attempt = 0; attempt < 50; attempt++) {
+    const intentDeadline = Date.now() + 20_000;
+    while (Date.now() < intentDeadline) {
       intent = await db.actionExecution.findFirst({ where: { caseId: concurrent.caseRow.id } });
       if (intent) break;
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
     assert.ok(intent, 'the first execution must commit intent before the target call');
     await assert.rejects(

@@ -144,7 +144,9 @@ the scheduled job every 60 s:
 7. Anchors older than 2 h → run anchor.
 
 Each run takes a Postgres advisory lock (`reconcile`), writes one audit event per changed row, and is
-idempotent: a second run in the same second changes nothing.
+idempotent: a second run in the same second changes nothing when no backlog remains. Approval expiry
+processes at most five oldest cases per run to bound the audited transaction; later scheduled runs
+drain the remaining backlog. Monitor backlog and run frequency before setting an approval-expiry SLO.
 
 ## 6. Drills
 

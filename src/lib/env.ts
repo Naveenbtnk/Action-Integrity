@@ -79,6 +79,14 @@ const PRODUCTION_REQUIRED = [
   'ANCHOR_STORE_SECRET_KEY',
 ] as const;
 
+const DEMO_SECRET = /^(local-|test-|replace-me|your-|example)/i;
+const PRODUCTION_SECRETS = [
+  'AUTH_SECRET',
+  'AGENT_SERVICE_KEY',
+  'TARGET_SERVICE_KEY',
+  'OPS_SERVICE_KEY',
+] as const;
+
 export function parseEnv(source: NodeJS.ProcessEnv): AppEnv {
   const result = EnvironmentSchema.safeParse(source);
 
@@ -99,6 +107,9 @@ export function parseEnv(source: NodeJS.ProcessEnv): AppEnv {
     if (parsed.ALLOW_DEMO_RESET) unsafe.push('ALLOW_DEMO_RESET');
     if (parsed.LOG_PRETTY) unsafe.push('LOG_PRETTY');
     if (parsed.OTEL_SDK_DISABLED === '1') unsafe.push('OTEL_SDK_DISABLED');
+    for (const key of PRODUCTION_SECRETS) {
+      if (DEMO_SECRET.test(parsed[key])) unsafe.push(key);
+    }
     if (
       parsed.INVESTIGATION_MODE === 'agent' &&
       (!parsed.GEMINI_API_KEY || /^(replace-me|local-placeholder)$/i.test(parsed.GEMINI_API_KEY))

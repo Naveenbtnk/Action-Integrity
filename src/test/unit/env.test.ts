@@ -52,6 +52,10 @@ describe('environment validation', () => {
     const production: NodeJS.ProcessEnv = {
       ...valid,
       NODE_ENV: 'production',
+      AUTH_SECRET: 'production-auth-secret-with-more-than-32-characters',
+      AGENT_SERVICE_KEY: 'production-agent-key-with-more-than-32-characters',
+      TARGET_SERVICE_KEY: 'production-target-key-with-more-than-32-characters',
+      OPS_SERVICE_KEY: 'production-ops-key-with-more-than-32-characters',
       AUTH_URL: 'https://example.com',
       OIDC_ISSUER: 'https://id.example.com',
       OIDC_CLIENT_ID: 'client',
@@ -69,5 +73,13 @@ describe('environment validation', () => {
     expect(
       parseEnv({ ...production, GEMINI_API_KEY: 'a-private-test-value' }).INVESTIGATION_MODE,
     ).toBe('agent');
+    for (const key of [
+      'AUTH_SECRET',
+      'AGENT_SERVICE_KEY',
+      'TARGET_SERVICE_KEY',
+      'OPS_SERVICE_KEY',
+    ] as const) {
+      expect(() => parseEnv({ ...production, [key]: valid[key] })).toThrow(key);
+    }
   });
 });

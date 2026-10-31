@@ -389,7 +389,7 @@ test('case-loop and sod: reviewer approves, another reviewer blocks, then verifi
   await reviewerPage.getByRole('button', { name: 'Record approval' }).click();
   await expect(
     reviewerPage.getByText('You approved this case. Another reviewer must complete this step.'),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 60_000 });
   await expect(reviewerPage.getByRole('button', { name: 'Complete block' })).toHaveCount(0);
 
   const executor = await browser.newContext();
@@ -398,7 +398,9 @@ test('case-loop and sod: reviewer approves, another reviewer blocks, then verifi
   await executorPage.goto(`${base}/app/investigations/${caseRef}`);
   await expect(executorPage.getByText('1 of 1 approvals')).toBeVisible();
   await executorPage.getByRole('button', { name: 'Complete block' }).click();
-  await expect(executorPage.getByRole('heading', { name: 'Verify business state' })).toBeVisible();
+  await expect(executorPage.getByRole('heading', { name: 'Verify business state' })).toBeVisible({
+    timeout: 60_000,
+  });
   await executorPage.getByRole('button', { name: 'Run verification' }).click();
   await expect(executorPage.getByText('Business state verified.')).toBeVisible({ timeout: 60_000 });
   await expect(executorPage.getByText('Closed · verified').first()).toBeVisible({

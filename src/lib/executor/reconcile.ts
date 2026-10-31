@@ -53,6 +53,8 @@ export async function reconcileExecutions(input: {
           where: { status: 'VALID', decision: 'APPROVE', expiresAt: { lte: now } },
           select: { caseId: true },
           distinct: ['caseId'],
+          orderBy: [{ expiresAt: 'asc' }, { id: 'asc' }],
+          take: 5,
         });
         const orphanedOutbox = await tx.outboxEvent.findMany({
           where: {
