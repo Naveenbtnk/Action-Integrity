@@ -1,188 +1,138 @@
-# Action Integrity
+<p align="center">
+  <img src="docs/media/brand-mark.svg" alt="Action Integrity mark" width="64" height="64">
+</p>
 
-**A governed control layer that stops unreliable data from producing harmful business actions — and
-proves the business state was restored when prevention was too late.**
+<h1 align="center">Action Integrity</h1>
 
-Built for the iOPEX _Data-to-Action Integrity_ evaluation.
+<p align="center"><strong>Evidence before action. Verification before closure.</strong></p>
 
----
+<p align="center">
+  <a href="#demo">Demo</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#run-locally">Run locally</a> ·
+  <a href="#release-status">Release status</a>
+</p>
 
-## What it does
+Action Integrity is a governed control layer for automated business actions. It detects when source data conflicts with a declared contract, holds exposed actions, helps people investigate the evidence, and checks the business state after a decision. This repository uses a **synthetic entitlement revoke workflow** for the iOPEX Data-to-Action Integrity evaluation.
 
-```
-unreliable evidence → exposed action → hold → agent investigation → quorum approval
-                    → deterministic block, release or compensation → verified business state
-                    → append-only audit → external anchor
-```
+> **Current status: D0 local demonstration.** The screenshots and video use synthetic records. This is not a production deployment or a system for real customer data. See [release status](#release-status).
 
-One action class, one target system, one closed loop:
+## Why it exists
 
-- **Detect** semantically valid drift that schema checks miss.
-- **Contain** the outbound action before it reaches the target system.
-- **Investigate** contradictory evidence with a cited, read-only agent.
-- **Decide** through deterministic, hash-pinned policy and accountable human quorum.
-- **Act** through one idempotent, allowlisted compensation mechanism — never retried blindly.
-- **Verify** the target business state, not the API response.
-- **Prove** the decision with an immutable, externally anchored audit chain.
+A subscription feed can return a valid response while reporting a status the contract does not recognize. An automation may then prepare to revoke a customer's entitlement. A successful API response would show that a request was delivered; it would not prove the customer outcome was correct.
 
-Deterministic code owns gates, thresholds, approvals, writes and verification. The model only reasons.
+Action Integrity places a control point before that write. Operators can see the conflicting source, the action at risk, the policy decision, and the evidence required to resolve the case.
 
-## Synthetic demo
+## Demo
 
-This 31-second walkthrough shows the public Product and Trust pages, the multi-page control room,
-and a held investigation using synthetic records. It was recorded locally with a read-only viewer
-account. It does not show a production deployment or live customer data.
+[![Product page showing the Action Integrity control trace](docs/media/product.png)](docs/media/synthetic-demo.mp4)
 
-[![Action Integrity product page and illustrated control trace](docs/media/product.png)](docs/media/synthetic-demo.mp4)
-
-[Watch the demo video (MP4)](docs/media/synthetic-demo.mp4)
+**[Watch the 31-second synthetic walkthrough](docs/media/synthetic-demo.mp4)** · Product and Trust pages → action queue → held investigation → policy and audit views. The recording starts after a read-only viewer signs in; it contains no login credentials.
 
 <details>
-<summary>More screenshots</summary>
+<summary>View screenshots</summary>
 
 ### Trust model
 
-![Trust model page](docs/media/trust.png)
+![Trust model and control boundaries](docs/media/trust.png)
 
-### Control room overview
+### Operator overview
 
-![Operational overview with synthetic cases](docs/media/overview.png)
+![Multi-page control room overview with synthetic cases](docs/media/overview.png)
 
-### Held investigation
+### Investigation
 
-![Synthetic held investigation and evidence workbench](docs/media/investigation.png)
+![Held synthetic entitlement action with its evidence workbench](docs/media/investigation.png)
 
 </details>
 
-## Production posture
+## How it works
 
-**Current verdict: local demonstration (D0); neither production-capable (D2) nor
-production-approved (D3).** The release gate is not implemented yet, and this workspace lacks the
-production services and organisational evidence required by `docs/PRODUCTION_READINESS.md`. See
-`docs/DEPLOYMENT_STATUS.md` for the latest verified checks and blockers. D2 requires a passing
-readiness report on the release commit; D3 additionally requires named sign-offs. No SOC 2, HIPAA,
-zero downtime, exactly-once target writes, or full autonomy claim is made.
+```mermaid
+flowchart TD
+    S["Synthetic source snapshots"] --> I["Integrity checks"]
+    A["Proposed entitlement action"] --> G["Deterministic action gate"]
+    I --> G
+    G -->|Allow| X["Single target executor"]
+    G -->|Hold| C["Case and evidence"]
+    G -->|Block| B["No target write"]
+    C --> M["Read-only investigator or fallback"]
+    M --> P["Hash-pinned policy"]
+    P --> H["Human approval quorum"]
+    H -->|Block| V["Verify target state"]
+    H -->|Release or compensate| X
+    X --> V
+    V --> R["Resolved, reopened, or escalated"]
+```
 
-## Documentation map
+Every consequential transition writes an audit record. Post-commit notifications and anchoring use an outbox. The model can assemble a cited recommendation, but deterministic code owns the gate, policy, approvals, target write, and verification.
 
-| Doc                            | Contents                                                                      |
-| ------------------------------ | ----------------------------------------------------------------------------- |
-| `AGENTS.md`                    | Operating contract for AI coding agents (read first)                          |
-| `docs/PRD.md`                  | Problem, scope, scenarios, success criteria                                   |
-| `docs/TRD.md`                  | Stack, env, layout, non-functional requirements                               |
-| `docs/ARCHITECTURE.md`         | Module contracts, state machine, concurrency, invariants                      |
-| `docs/BACKEND_SCHEMA.md`       | Every table, enum and constraint                                              |
-| `docs/DATABASE.md`             | Migrations, seed, transactions, retention, safety                             |
-| `docs/SUPABASE_SETUP.md`       | Hosted PostgreSQL connection and migration steps for the demo                 |
-| `docs/GEMINI_SETUP.md`         | Safe Gemini investigator configuration and synthetic provider check           |
-| `docs/API.md`                  | Endpoints, envelope, errors, rate limits                                      |
-| `docs/APP_FLOW.md`             | Pages, journeys, states, overlays, edge cases, accessibility                  |
-| `docs/UI_UX_BRIEF.md`          | Frontend specification: IA, routes, tokens, components, motion, accessibility |
-| `docs/RBAC.md`                 | Roles, permissions, quorum, separation of duties, break-glass                 |
-| `docs/FAILURE_MODES.md`        | Retry classes, degradation ladder, 26 failure modes                           |
-| `docs/OBSERVABILITY.md`        | Logs, traces, metrics, SLOs, alerts, anchoring                                |
-| `docs/OPERATIONS.md`           | Environments, release, incidents, 14 runbooks, DR                             |
-| `docs/PRODUCTION_READINESS.md` | Go/no-go criteria, evidence, sign-offs, residual gaps                         |
-| `docs/EVALUATION.md`           | Functional + adversarial suites, tiers, metrics, baseline                     |
-| `docs/SECURITY.md`             | Threat model, controls, agent security, known gaps                            |
-| `docs/CODE_STYLE.md`           | Conventions and testing rules                                                 |
-| `docs/DECISIONS.md`            | ADRs 001–028 and rejected ideas                                               |
-| `docs/IMPLEMENTATION_PLAN.md`  | Phases with done criteria                                                     |
-| `docs/prompts/`                | One copy-paste prompt per phase                                               |
-| `docs/prompts/audits/`         | Read-only audits run in Phase 12                                              |
+| Boundary               | Responsibility                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Detect and contain** | Compare source meaning with declared contracts; hold an exposed action before it reaches the synthetic target.                           |
+| **Investigate**        | Read bounded evidence and produce a cited report with Gemini when enabled; fall back to a deterministic report on provider failure.      |
+| **Decide**             | Apply a versioned policy and require the appropriate distinct human reviewers. New evidence invalidates stale approvals.                 |
+| **Act and verify**     | Use one allowlisted executor path for a release or compensation. Read the target business state before calling a case resolved.          |
+| **Account for it**     | Keep an append-only audit trail and outbox record. The demo's anchors are local files; external anchoring remains a release requirement. |
 
-## Quickstart
+The console is **multi-page**: Overview, Actions, Investigations, Recoveries, Verification, Policies, Audit, and Settings. Public Product and Trust pages explain the workflow without requiring sign-in.
 
-> Phases 0–7 are implemented. The multi-page operator console is in Phase 8; deployment
-> readiness remains in later phases of `docs/prompts/`.
+## Stack
+
+| Layer         | Current implementation                                                                         |
+| ------------- | ---------------------------------------------------------------------------------------------- |
+| UI and API    | Next.js 16, React 19, TypeScript, Tailwind CSS, Base UI and shadcn/ui components               |
+| Data          | PostgreSQL, Prisma, Redis for the local stack; the current demo database is hosted on Supabase |
+| Identity      | Auth.js; local credentials for development, OIDC integration required for production           |
+| Investigation | Gemini structured report with citation validation and deterministic fallback                   |
+| Verification  | Playwright browser tests, unit and integration suites, role checks                             |
+
+There is no vector database or embedding pipeline. The investigator reads the case's structured evidence directly.
+
+## Run locally
+
+**Requirements:** Node.js 24+, Docker, and a fresh local development database. These commands seed **synthetic data**; do not point them at a database containing real records.
+
+1. Copy `.env.example` to `.env`. Keep the default local PostgreSQL and Redis URLs. Set `AUTH_CREDENTIALS_ENABLED=true` and replace `AUTH_SECRET`, `AGENT_SERVICE_KEY`, `TARGET_SERVICE_KEY`, and `OPS_SERVICE_KEY` with separate random values of at least 32 characters. Keep `INVESTIGATION_MODE=deterministic` for the first run. Never commit `.env`.
+2. Start the local services and install dependencies:
+
+   ```bash
+   docker compose up -d db redis
+   npm ci
+   npx prisma migrate deploy
+   npm run seed
+   npm run dev
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000). Choose **Open control room** and sign in with a seeded account. `npm run seed` prints the local passwords. To replace a lost viewer password, run `npm run login:reset-local -- viewer@aic.local` in your own terminal and keep its output private.
+4. The seed registers policy `2026.10.2` as a draft. Sign in as the seeded admin, open **Policies**, review the draft, and activate it using the local review ticket `SEED-BASELINE`. Until an active policy verifies, `/api/v1/health` returns `503` by design.
+
+For a hosted PostgreSQL demo, follow [Supabase setup](docs/SUPABASE_SETUP.md) instead of the local database steps. To enable the read-only Gemini investigator, follow [Gemini setup](docs/GEMINI_SETUP.md) and run `npm run gemini:check` with synthetic evidence before switching `INVESTIGATION_MODE=agent`.
+
+### Checks
 
 ```bash
-# prerequisites: Node 24 and Docker
-cp .env.example .env          # fill DATABASE_URL, AUTH_SECRET, GEMINI_API_KEY,
-                              # AGENT_SERVICE_KEY, TARGET_SERVICE_KEY, OPS_SERVICE_KEY, AIC_BASE_URL
-docker compose up -d db redis  # host ports 15432 and 16379
-npm install
-npx prisma migrate deploy
-npm run seed                  # prints local credentials once
-npm run policy:hash           # canonical hash for draft policy 2026.10.2
-npm run dev                   # Product, Trust, sign-in and control room at :3000
+npm run typecheck
+npm run lint
+npm run test:unit
 ```
 
-The public Product and Trust pages are at `http://localhost:3000/` and
-`http://localhost:3000/trust`. **Open control room** leads to `/login`.
-All pages deploy from the same Next.js service.
+Integration and browser tests use a database and create synthetic fixtures. Run them against a **dedicated development database** with `npm run test:integration` and `npm run test:e2e`.
 
-The seed preserves the historical `2026.10.1` placeholder as active and registers `2026.10.2`
-as a draft. An authenticated `ADMIN` must call `POST /api/v1/admin/policy/activate` with its
-version, hash, review ticket (`SEED-BASELINE` locally) and an `Idempotency-Key` before policy
-evaluation becomes available. `/api/v1/health` reports `503` until the active policy verifies.
-The admin can activate the reviewed draft from its Policies detail page. For agent mode, follow
-`docs/GEMINI_SETUP.md` and run `npm run gemini:check` before investigating.
-Production requires OIDC, shared rate limiting, telemetry, and the later readiness gates. See
-`docs/DEPLOYMENT_STATUS.md` for the current verified state and blockers.
+## Release status
 
-Seeded users (development only):
+The latest [deployment status](docs/DEPLOYMENT_STATUS.md) records passing local checks and a successful synthetic Gemini provider check. It also records that the production build **intentionally fails its environment gate** with the present development settings. A connected Supabase database does not change the D0 verdict.
 
-| Email                 | Role            | Use                                                                            |
-| --------------------- | --------------- | ------------------------------------------------------------------------------ |
-| `viewer@aic.local`    | VIEWER          | read-only walkthrough                                                          |
-| `analyst@aic.local`   | ANALYST         | investigate, request and add evidence                                          |
-| `reviewer@aic.local`  | REVIEWER        | approve, execute, verify, reopen                                               |
-| `reviewer2@aic.local` | REVIEWER        | second reviewer — completes the block or write after another reviewer approved |
-| `senior@aic.local`    | SENIOR_REVIEWER | high-risk approval, second approver                                            |
-| `admin@aic.local`     | ADMIN           | users, policy activation, eval, operations — cannot approve                    |
-| `auditor@aic.local`   | AUDITOR         | read everything, verify the chain                                              |
+Before a real deployment, the project still needs production OIDC identity, shared rate limiting, external audit anchors, telemetry, dependable workers and scheduling, implemented readiness and audit-verification commands, load and failure evidence, restore drills, and named release sign-offs. The full criteria and residual risks are in [Production Readiness](docs/PRODUCTION_READINESS.md) and [Security](docs/SECURITY.md). No SOC 2, HIPAA, zero-downtime, exactly-once target write, or autonomous decision claim is made.
 
-Passwords are printed by `npm run seed` and are never committed. Rotate or remove them before any
-deployment that is not a local demo.
+## Documentation
 
-## Evaluation
-
-```bash
-npm run test:scenarios -- --mode=deterministic   # baseline
-npm run test:scenarios -- --mode=agent           # treatment
-npm run test:adversarial                         # injection, forged citations, stale approvals
-npm run test:rbac                                # role matrix, quorum, SoD, break-glass
-npm run test:failure                             # dependency and concurrency failures
-npm run test:load -- --rps=20 --minutes=30
-npm run test:chaos -- --cases=200
-npm run drill:restore
-npm run readiness -- --level D2 --commit <sha>
-```
-
-Results and the comparison table appear in the Evaluation tab of `/app/analytics` (ADMIN/AUDITOR). The
-functional fixtures are frozen at `v1`; changing them requires a new suite version and an ADR entry.
-
-## Repository layout
-
-```
-docs/           product, technical, standards, operations and phase prompts
-config/         policy/<version>.json (immutable), metrics.json (labelled assumptions)
-prisma/         schema, migrations, deterministic seed
-scenarios/      13-scenario suite (12 business + X) + adversarial tier
-ops/            dashboards, alert rules
-scripts/        demo, smoke, drills, readiness checks
-src/app/        routes: (public), (auth), app/ control room and api/v1 handlers
-src/lib/        integrity, exposure, gate, policy, approval, executor, verifier, agent, adapters,
-                target, eval, audit, outbox, idempotency, reconcile, degradation, observability,
-                state-machine, rbac, plus api/auth/permissions/schemas/ui support
-src/components/ ui (shadcn on Base UI), accent, shell and feature components
-src/test/       unit, integration, scenario, failure, chaos, rbac, api, security, audit, outbox
-```
-
-## Known gaps
-
-Honest list — detail in `docs/SECURITY.md` §11 and `docs/PRODUCTION_READINESS.md` §7:
-
-- Single organisation; no row-level tenancy.
-- External anchor store is required in production; the demo writes local anchor files.
-- No penetration test yet; synthetic data only until it is complete.
-- No automated joiner/mover/leaver; quarterly access review is manual.
-- No PII redaction or retention job; do not load real customer data.
-- MFA depends on the IdP configuration, not the application.
-- Single region; recovery relies on PITR with a 60-minute RTO.
-- Break-glass trusts two administrators not to collude; every use is audited and reviewed.
+- [Product requirements](docs/PRD.md) and [user journeys](docs/APP_FLOW.md)
+- [Architecture and invariants](docs/ARCHITECTURE.md), [API](docs/API.md), and [database](docs/DATABASE.md)
+- [Roles and approval rules](docs/RBAC.md), [security](docs/SECURITY.md), and [failure modes](docs/FAILURE_MODES.md)
+- [Gemini setup](docs/GEMINI_SETUP.md), [Supabase setup](docs/SUPABASE_SETUP.md), and [deployment status](docs/DEPLOYMENT_STATUS.md)
+- [Production readiness criteria](docs/PRODUCTION_READINESS.md) and [evaluation plan](docs/EVALUATION.md)
 
 ## License
 
-Private evaluation build. Not for redistribution.
+Private evaluation build. No redistribution license is granted.
