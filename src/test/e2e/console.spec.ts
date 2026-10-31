@@ -1,6 +1,7 @@
 import 'dotenv/config';
 
 import { randomBytes, randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 
 import { expect, test } from '@playwright/test';
 import { hash } from 'bcryptjs';
@@ -257,6 +258,36 @@ async function login(page: import('@playwright/test').Page, email: string) {
   await page.getByRole('button', { name: 'Sign in locally' }).click();
   await expect(page).toHaveURL(/\/app\/overview/, { timeout: 60_000 });
 }
+
+test('case snapshot downloads recorded facts without claiming audit proof', async ({ page }) => {
+  await login(page, identities.viewer);
+  await page.goto(`${base}/app/investigations/${caseRef}`);
+  const jsonDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download JSON' }).click();
+  const jsonDownload = await jsonDownloadPromise;
+  expect(jsonDownload.suggestedFilename()).toBe(`case-${caseRef}.json`);
+  const jsonPath = await jsonDownload.path();
+  if (!jsonPath) throw new Error('JSON download path is missing.');
+  const record = JSON.parse(await readFile(jsonPath, 'utf8')) as {
+    proofStatus: string;
+    case: { ref: string; status: string };
+    policy: { version: string };
+    verification: unknown;
+  };
+  expect(record.proofStatus).toBe('UNSIGNED_SNAPSHOT');
+  expect(record.case.ref).toBe(caseRef);
+  expect(record.policy.version).toBe('2026.10.2');
+  expect(record.verification).toBeNull();
+
+  const markdownDownloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download Markdown' }).click();
+  const markdownDownload = await markdownDownloadPromise;
+  const markdownPath = await markdownDownload.path();
+  if (!markdownPath) throw new Error('Markdown download path is missing.');
+  const markdown = await readFile(markdownPath, 'utf8');
+  expect(markdown).toContain('Unsigned operator snapshot');
+  expect(markdown).toContain('Verification: not recorded');
+});
 
 test('multipage navigation keeps each workflow distinct at desktop and compact widths', async ({
   page,

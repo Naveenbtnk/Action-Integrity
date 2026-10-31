@@ -1,11 +1,13 @@
 import Link from 'next/link';
 
 import { CaseControls } from '@/components/console/CaseControls';
+import { CaseSnapshotDownload } from '@/components/console/CaseSnapshotDownload';
 import { PageFrame } from '@/components/console/PageFrame';
 import { StateBadge } from '@/components/console/StateBadge';
 import { pagePrincipalWith } from '@/lib/auth/page-principal';
 import { getCase } from '@/lib/gate/queries';
 import { ROLE_PERMISSIONS } from '@/lib/rbac';
+import { buildDecisionSnapshot } from '@/lib/ui/build-decision-snapshot';
 
 export async function CaseWorkspace({
   caseRef,
@@ -23,6 +25,7 @@ export async function CaseWorkspace({
   ) => actor.roles.some((role) => ROLE_PERMISSIONS[role].includes(permission));
   const latestVerification = detail.verifications[0];
   const latestExecution = detail.execution[0];
+  const snapshot = buildDecisionSnapshot(detail, new Date());
   return (
     <PageFrame
       eyebrow={`${recovery ? 'RECOVERY' : 'INVESTIGATION'} / ${row.ref}`}
@@ -267,6 +270,7 @@ export async function CaseWorkspace({
                 No policy decision has been recorded.
               </p>
             )}
+            <CaseSnapshotDownload snapshot={snapshot} />
           </section>
           <section id="verification" className="border border-border bg-card p-6">
             <p data-instrument className="text-xs text-primary">
