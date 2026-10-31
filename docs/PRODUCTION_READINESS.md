@@ -221,7 +221,7 @@ When a criterion fails:
 
 1. Do not downgrade it to `C` to ship. Change the status only with a compensating control, an owner
    and an expiry, recorded in §7.
-2. Add the remediation as a dated action item in `IMPLEMENTATION_PLAN.md`, not a comment.
+2. Add the remediation as a dated action item in `DEPLOYMENT_STATUS.md` or the release issue tracker.
 3. Re-run `npm run readiness` on the same commit after the fix; attach the new report.
 4. If the failure is in an invariant, stop. There is no pilot exception for `aic_unverified_write_total`,
    `aic_audit_chain_break_total`, or a gate bypass.

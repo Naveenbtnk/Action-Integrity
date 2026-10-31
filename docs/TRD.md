@@ -212,51 +212,26 @@ malformed value. No silent defaults for secrets. Production additionally refuses
 
 ```
 action-integrity/
-├─ AGENTS.md                     # agent operating contract
 ├─ README.md
-├─ docs/                         # this documentation set
-├─ config/
-│  ├─ policy/<version>.json      # immutable policy documents
-│  └─ metrics.json               # KPI assumptions + tolerances
-├─ prisma/{schema.prisma,migrations/,seed.ts}
-├─ scenarios/                    # eval fixtures (13 = 12 business + X) + adversarial tier
-├─ e2e/                          # Playwright journeys (two-person approval, ops/admin)
-├─ ops/dashboards/*.json          # provisionable dashboards
-├─ scripts/                      # demo-reset, demo-scenario, smoke, drills, readiness
-├─ src/
-│  ├─ app/
-│  │  ├─ (public)/{page,trust}/   # public introduction and operating model
-│  │  ├─ (auth)/login/            # sign-in only; no signup, invite or reset route
-│  │  ├─ app/                     # authenticated control room
-│  │  │  ├─ layout.tsx            # rail + top bar + permission guard
-│  │  │  ├─ overview/  actions/[actionId]/  investigations/[caseId]/
-│  │  │  ├─ evidence/  recoveries/[caseId]/  verification/
-│  │  │  ├─ policies/[policyId]/  integrations/[integrationId]/
-│  │  │  ├─ audit/  analytics/  settings/{access,approvals,operations,notifications}/
-│  │  │  └─ forbidden/
-│  │  └─ api/v1/...               # control plane, admin, internal, sources, target, eval, health
-│  ├─ components/{ui,accent,shell,auth,actions,investigations,evidence,recoveries,policies,audit,analytics,settings}/
-│  ├─ lib/
-│  │  ├─ env.ts  db.ts  auth.ts  rbac.ts  errors.ts
-│  │  ├─ api/  auth/  permissions/  schemas/  ui/  utils/
-│  │  ├─ integrity/  exposure/  gate/  policy/  approval/  executor/  verifier/
-│  │  ├─ agent/{investigator.ts,llm-client.ts,tools.ts,prompts/,schema.ts,fallback.ts}
-│  │  ├─ adapters/{sources/*,target/*}
-│  │  ├─ target/{service.ts,auth.ts}
-│  │  ├─ audit/{append.ts,verify-chain.ts,anchor.ts}
-│  │  ├─ outbox/{enqueue.ts,publisher.ts,consumers/*}
-│  │  ├─ idempotency/  reconcile/  degradation/  observability/
-│  │  ├─ eval/{runner.ts,fixtures.ts,fixture-loader.ts,assertions.ts,metrics.ts,service.ts,kpi-service.ts}
-│  │  └─ state-machine/case.ts
-│  └─ test/{unit,integration,failure,chaos,rbac,state-machine,api,security,audit,outbox}/
-├─ .storybook/                    # component workbench
+├─ docs/                         # product, architecture, security, and operations
+├─ config/                       # versioned policy and metric configuration
+├─ prisma/                       # schema, migrations, and synthetic seed
+├─ scripts/                      # checks and local maintenance
+├─ src/app/                      # public pages, console, and API routes
+├─ src/components/               # shared UI and feature components
+├─ src/lib/                      # control plane, adapters, and persistence
+├─ src/test/                     # unit, integration, scenario, and browser tests
+├─ .storybook/                   # component workbench
 └─ .github/workflows/ci.yml
 ```
 
 Naming: `kebab-case` files, `PascalCase` components, `camelCase` functions, `SCREAMING_SNAKE`
 constants, DB tables `snake_case` singular, enums `SCREAMING_SNAKE` values.
 
-## 10. Verification commands (must exist by Phase 13)
+## 10. Verification commands
+
+This is the target release gate, not a list of completed checks. Several commands are not yet
+implemented; see [deployment status](DEPLOYMENT_STATUS.md) for what has been verified.
 
 | Command                                                                  | Purpose                        |
 | ------------------------------------------------------------------------ | ------------------------------ |

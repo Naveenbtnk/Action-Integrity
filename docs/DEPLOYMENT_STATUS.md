@@ -15,8 +15,8 @@
 
 1. Configure an OIDC provider, production `AUTH_URL`, and disable the local credentials provider. Create and test the role claims.
 2. Provision shared Redis, external audit anchor storage, and OTLP telemetry. Supply these credentials through the host's secret store, not `.env` in Git.
-3. The user reports rotating the Gemini key after it was disclosed in chat. Its current age and account restrictions have not been independently verified; confirm them before public deployment.
-4. Implement and pass the placeholder `readiness`, `audit:verify`, `test:load`, `test:chaos`, and `smoke` commands. Run the agent evaluation against the deterministic baseline, including quality and fallback cases.
+3. Confirm the Gemini key's rotation date and account restrictions in the provider console before public deployment; these have not been independently verified.
+4. Implement and pass the missing `readiness`, `audit:verify`, `test:load`, `test:chaos`, and `smoke` checks. Run the agent evaluation against the deterministic baseline, including quality and fallback cases.
 5. Complete the restore, security, on-call, and human sign-off evidence required by the release gate. Publish only after the environment-specific go/no-go review.
 
 Do not use the current workspace to process real customer data or claim production approval. The local Supabase connection is persistent storage; it does not supply the remaining security and operational controls.

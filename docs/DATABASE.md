@@ -74,12 +74,12 @@ scenario assertions stay stable. No real personal data; names are synthetic. The
 refuses production entirely; a reviewed production identity bootstrap is a later release step.
 Local seed passwords are random, printed once on first creation and never written to disk or logs.
 
-`seed:scenario` applies only the delta needed for one evaluation scenario, so the harness can run
-13 fixtures sequentially without a full reseed.
+The planned `seed:scenario` command will apply only the delta needed for one evaluation scenario,
+so the harness can run fixtures sequentially without a full reseed.
 
-`demo:reset` (Phase 13) is the guarded demo variant of `seed:reset`: it refuses without
-`ALLOW_DEMO_RESET=1` and a host in `DEMO_DB_HOSTS`, then prints a state fingerprint. Use `seed:reset`
-for local development and `demo:reset` before a live walkthrough. Reset never touches the audit chain
+The planned `demo:reset` command is a guarded demo variant of `seed:reset`. It must refuse without
+`ALLOW_DEMO_RESET=1` and a host in `DEMO_DB_HOSTS`, then print a state fingerprint. It is not
+implemented yet; use `seed:reset` for local development. A reset must never touch the audit chain
 outside the demo database; an anchored production ledger is never truncated.
 
 ## 4. Transactions and integrity rules

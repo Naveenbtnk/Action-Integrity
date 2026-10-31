@@ -1,7 +1,7 @@
 # SECURITY.md
 
-All engineers and AI coding agents must follow this file. When a request conflicts with it, stop and
-flag the conflict rather than working around it.
+All contributors must follow this file. When a request conflicts with it, stop and flag the
+conflict rather than working around it.
 
 ---
 

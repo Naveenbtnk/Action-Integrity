@@ -121,7 +121,7 @@ looks small.
 
 Within 5 business days: a blameless review with a timeline, customer impact, root cause, the control
 that failed, the control that caught it, and action items with owners and dates. Action items are
-added to `IMPLEMENTATION_PLAN.md` or `PRODUCTION_READINESS.md`, not left in a chat.
+recorded in `DEPLOYMENT_STATUS.md` or the release issue tracker.
 
 ## 5. Runbooks
 
