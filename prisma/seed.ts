@@ -286,7 +286,7 @@ async function seedPolicies(): Promise<void> {
         {
           version,
           status,
-          hash: version === '2026.10.2' ? sha(canonicalJson(document)) : sha(bytes),
+          hash: sha(canonicalJson(document)),
           document,
           reviewTicket: 'SEED-BASELINE',
           activatedAt: status === PolicyStatus.ACTIVE ? seedTime : null,
