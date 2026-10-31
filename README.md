@@ -27,6 +27,33 @@ One action class, one target system, one closed loop:
 
 Deterministic code owns gates, thresholds, approvals, writes and verification. The model only reasons.
 
+## Synthetic demo
+
+This 31-second walkthrough shows the public Product and Trust pages, the multi-page control room,
+and a held investigation using synthetic records. It was recorded locally with a read-only viewer
+account. It does not show a production deployment or live customer data.
+
+[![Action Integrity product page and illustrated control trace](docs/media/product.png)](docs/media/synthetic-demo.mp4)
+
+[Watch the demo video (MP4)](docs/media/synthetic-demo.mp4)
+
+<details>
+<summary>More screenshots</summary>
+
+### Trust model
+
+![Trust model page](docs/media/trust.png)
+
+### Control room overview
+
+![Operational overview with synthetic cases](docs/media/overview.png)
+
+### Held investigation
+
+![Synthetic held investigation and evidence workbench](docs/media/investigation.png)
+
+</details>
+
 ## Production posture
 
 **Current verdict: local demonstration (D0); neither production-capable (D2) nor
@@ -61,7 +88,6 @@ zero downtime, exactly-once target writes, or full autonomy claim is made.
 | `docs/CODE_STYLE.md`           | Conventions and testing rules                                                 |
 | `docs/DECISIONS.md`            | ADRs 001–028 and rejected ideas                                               |
 | `docs/IMPLEMENTATION_PLAN.md`  | Phases with done criteria                                                     |
-| `docs/DEMO_SCRIPT.md`          | Timed walkthrough with a fallback line per beat (Phase 13)                    |
 | `docs/prompts/`                | One copy-paste prompt per phase                                               |
 | `docs/prompts/audits/`         | Read-only audits run in Phase 12                                              |
 
@@ -109,19 +135,6 @@ Seeded users (development only):
 
 Passwords are printed by `npm run seed` and are never committed. Rotate or remove them before any
 deployment that is not a local demo.
-
-## Demo
-
-```bash
-npm run demo:reset                 # deterministic seed + fixture set
-npm run demo:scenario -- A         # prevention: block, zero writes, verified
-npm run demo:scenario -- B         # compensation with quorum, executed by a non-approver
-npm run demo:scenario -- C         # conflicting evidence: no auto winner, escalation
-npm run demo:scenario -- D         # verification failure: reopened, not recovered
-npm run demo:scenario -- E         # safe refusal: no execution
-```
-
-The timed narrative is in `docs/DEMO_SCRIPT.md` (created in Phase 13).
 
 ## Evaluation
 
