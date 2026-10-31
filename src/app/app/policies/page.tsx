@@ -32,7 +32,7 @@ export default async function PoliciesPage() {
                 </p>
               </div>
               <span
-                className={`border px-3 py-1 font-mono text-xs ${policy.status === 'ACTIVE' ? 'border-operational-success text-operational-success' : 'border-border text-operational-muted'}`}
+                className={`border px-3 py-1 text-xs font-medium ${policy.status === 'ACTIVE' ? 'border-operational-success text-operational-success' : 'border-border text-operational-muted'}`}
               >
                 {policy.status}
               </span>

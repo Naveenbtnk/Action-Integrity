@@ -23,7 +23,7 @@ export function StateBadge({ value }: { readonly value: string }) {
         : 'text-operational-info border-operational-info/40';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 border px-2 py-1 font-mono text-[11px] ${tone}`}
+      className={`inline-flex items-center gap-1.5 border px-2.5 py-1 text-xs font-medium ${tone}`}
     >
       <Icon className="size-3" aria-hidden="true" />
       {statusLabel(value)}

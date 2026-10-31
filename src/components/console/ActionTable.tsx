@@ -33,7 +33,7 @@ const columns = helper.columns([
       <Link
         href={`/app/actions/${info.row.original.id}`}
         title={info.getValue()}
-        className="block max-w-52 truncate font-mono text-xs text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+        className="block max-w-52 truncate font-mono text-sm text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
       >
         {info.getValue()}
       </Link>
@@ -56,7 +56,7 @@ const columns = helper.columns([
         <Link
           href={`/app/investigations/${info.getValue()}`}
           title={info.getValue() ?? undefined}
-          className="block max-w-44 truncate font-mono text-xs underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          className="block max-w-44 truncate font-mono text-sm underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
         >
           {info.getValue()}
         </Link>
@@ -85,7 +85,7 @@ export function ActionTable({
         <p className="text-xs text-operational-muted">
           {rows.length} action{rows.length === 1 ? '' : 's'} on this page
         </p>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-sm">
           <div className="flex border border-border" aria-label="Action order">
             {(['newest', 'oldest'] as const).map((value) => (
               <Link
@@ -135,7 +135,7 @@ export function ActionTable({
       <div className="overflow-x-auto border border-border bg-card">
         <table className="w-full min-w-[760px] border-collapse text-left text-sm">
           <caption className="sr-only">Proposed business actions and their gate outcomes</caption>
-          <thead className="border-b border-border bg-background font-mono text-[11px] uppercase text-operational-muted">
+          <thead className="border-b border-border bg-background text-xs font-medium uppercase tracking-[.05em] text-operational-muted">
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => (
@@ -168,10 +168,7 @@ export function ActionTable({
                 className="border-b border-border/70 hover:bg-background focus-visible:bg-background focus-visible:outline-2 focus-visible:outline-primary"
               >
                 {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className={`px-4 font-mono text-xs ${compact ? 'py-2' : 'py-3'}`}
-                  >
+                  <td key={cell.id} className={`px-4 text-sm ${compact ? 'py-2' : 'py-3'}`}>
                     <table.FlexRender cell={cell} />
                   </td>
                 ))}
@@ -180,7 +177,7 @@ export function ActionTable({
           </tbody>
         </table>
       </div>
-      <p className="mt-2 text-xs text-operational-muted">
+      <p className="mt-2 text-sm text-operational-muted">
         Use ↑ and ↓ to move between rows; press Enter to open the focused action.
       </p>
     </div>

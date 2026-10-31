@@ -28,7 +28,7 @@ export function CaseQueue({
         <caption className="sr-only">
           {showInvestigationMeta ? 'Investigation work queue' : 'Cases in this work queue'}
         </caption>
-        <thead className="border-b border-border bg-background font-mono text-[11px] uppercase text-operational-muted">
+        <thead className="border-b border-border bg-background text-xs font-medium uppercase tracking-[.05em] text-operational-muted">
           <tr>
             <th scope="col" className="px-4 py-3 font-normal">
               Case
@@ -80,7 +80,7 @@ export function CaseQueue({
                   href={`${basePath}/${encodeURIComponent(row.ref)}`}
                   className="font-medium text-foreground underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <span className="block font-mono text-[11px] text-primary">{row.ref}</span>
+                  <span className="block font-mono text-xs text-primary">{row.ref}</span>
                   {row.title}
                 </Link>
               </td>
@@ -98,12 +98,12 @@ export function CaseQueue({
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">{row.actions.length}</td>
                   <td
-                    className="max-w-36 truncate px-4 py-3 text-xs"
+                    className="max-w-36 truncate px-4 py-3 text-sm"
                     title={row.ownerName ?? undefined}
                   >
                     {row.ownerName ?? 'Unassigned'}
                   </td>
-                  <td className="px-4 py-3 font-mono text-[11px]">
+                  <td className="px-4 py-3 font-mono text-xs">
                     {row.slaDueAt ? (
                       <time dateTime={row.slaDueAt.toISOString()}>
                         {row.slaDueAt.toISOString().slice(0, 16).replace('T', ' ')} UTC
@@ -117,7 +117,7 @@ export function CaseQueue({
                 <>
                   <td className="px-4 py-3 font-mono text-xs">{row.severity}</td>
                   <td className="px-4 py-3 font-mono text-xs">{row.exposureCount}</td>
-                  <td className="px-4 py-3 font-mono text-[11px] text-operational-muted">
+                  <td className="px-4 py-3 font-mono text-xs text-operational-muted">
                     <time dateTime={row.openedAt.toISOString()}>
                       {row.openedAt.toISOString().slice(0, 16).replace('T', ' ')} UTC
                     </time>

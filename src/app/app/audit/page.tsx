@@ -18,7 +18,7 @@ export default async function AuditPage() {
       ) : (
         <div className="overflow-x-auto border border-border bg-card">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-background font-mono text-[11px] text-operational-muted">
+            <thead className="border-b border-border bg-background text-xs font-medium uppercase tracking-[.05em] text-operational-muted">
               <tr>
                 <th className="px-4 py-3 font-normal">Sequence</th>
                 <th className="px-4 py-3 font-normal">Event</th>

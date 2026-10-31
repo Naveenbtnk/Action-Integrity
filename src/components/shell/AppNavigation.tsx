@@ -87,7 +87,7 @@ export function AppNavigation({
                 key={item.href}
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={`flex min-h-10 shrink-0 items-center gap-2 border px-3 text-xs focus-visible:ring-2 focus-visible:ring-ring ${active ? 'border-primary bg-primary/10 text-foreground' : 'border-transparent text-operational-muted hover:border-border hover:text-foreground'}`}
+                className={`flex min-h-10 shrink-0 items-center gap-2 border px-3 text-sm focus-visible:ring-2 focus-visible:ring-ring ${active ? 'border-primary bg-primary/10 text-foreground' : 'border-transparent text-operational-muted hover:border-border hover:text-foreground'}`}
               >
                 <item.icon className="size-4" aria-hidden="true" />
                 {item.label}
@@ -102,10 +102,7 @@ export function AppNavigation({
     <nav aria-label="Primary" className="space-y-5">
       {groups.map((group) => (
         <div key={group.label}>
-          <p
-            data-instrument
-            className="mb-2 px-3 text-[10px] uppercase tracking-[.14em] text-operational-muted"
-          >
+          <p className="mb-2 px-3 text-xs font-medium uppercase tracking-[.09em] text-operational-muted">
             {group.label}
           </p>
           <div className="space-y-1">

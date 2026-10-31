@@ -46,7 +46,7 @@ export function AppShell({
           <AppNavigation permissions={[...permissions]} />
         </div>
         <div className="border-t border-border px-6 py-5">
-          <p data-instrument className="text-[10px] text-operational-muted">
+          <p className="text-xs font-medium tracking-[.08em] text-operational-muted">
             CONTROL PLANE / {environment}
           </p>
         </div>
@@ -55,17 +55,15 @@ export function AppShell({
         <header className="sticky top-0 z-20 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border bg-background px-5 py-3 lg:px-8">
           <div className="flex items-center gap-3">
             <Activity className="size-4 text-operational-success" aria-hidden="true" />
-            <span data-instrument className="text-xs text-operational-muted">
-              {environment}
-            </span>
-            <span className="border-l border-border pl-3 font-mono text-[11px] text-operational-muted">
+            <span className="text-sm font-medium text-operational-muted">{environment}</span>
+            <span className="border-l border-border pl-3 text-sm text-operational-muted">
               {mode}
             </span>
             {policy && (
               <Link
                 href="/app/policies"
                 title={policy.hash}
-                className="hidden border-l border-border pl-3 font-mono text-[11px] text-operational-muted hover:text-foreground sm:inline"
+                className="hidden border-l border-border pl-3 text-sm text-operational-muted hover:text-foreground sm:inline"
               >
                 POLICY {policy.version}
               </Link>
@@ -74,19 +72,16 @@ export function AppShell({
               <span
                 data-instrument
                 title={degradation.reason}
-                className={`border px-2 py-1 text-[10px] ${degradation.level === 'L4_AUDIT_BROKEN' ? 'border-primary text-primary' : 'border-operational-warning text-operational-warning'}`}
+                className={`border px-2 py-1 text-xs font-medium ${degradation.level === 'L4_AUDIT_BROKEN' ? 'border-primary text-primary' : 'border-operational-warning text-operational-warning'}`}
               >
                 {degradation.level.replaceAll('_', ' ')}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex items-center gap-3 text-sm">
             <GlobalSearch />
             <span className="hidden text-operational-muted md:inline">{user.name}</span>
-            <span
-              data-instrument
-              className="hidden border border-border px-2 py-1 text-[10px] text-operational-muted sm:inline"
-            >
+            <span className="hidden border border-border px-2 py-1 text-xs font-medium text-operational-muted sm:inline">
               {user.roles.join(' · ')}
             </span>
             <form
@@ -95,7 +90,7 @@ export function AppShell({
                 await signOut({ redirectTo: '/login' });
               }}
             >
-              <button className="border border-border px-3 py-2 text-xs hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
+              <button className="border border-border px-3 py-2 text-sm hover:bg-card focus-visible:ring-2 focus-visible:ring-ring">
                 Sign out
               </button>
             </form>

@@ -39,9 +39,9 @@ export function GlobalSearch() {
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Search case or action"
         maxLength={80}
-        className="h-9 w-40 bg-transparent px-3 text-xs outline-none xl:w-52"
+        className="h-9 w-40 bg-transparent px-3 text-sm outline-none xl:w-52"
       />
-      <kbd className="border border-border px-1 text-[10px] text-operational-muted">⌘K</kbd>
+      <kbd className="border border-border px-1.5 py-0.5 text-xs text-operational-muted">⌘K</kbd>
     </form>
   );
 }

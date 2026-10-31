@@ -93,7 +93,7 @@ export default async function OverviewPage() {
             key={label}
             className="flex min-h-20 items-center justify-between gap-3 bg-card px-4 py-3 sm:px-5"
           >
-            <p className="text-xs leading-5 text-operational-muted">{label}</p>
+            <p className="text-sm leading-5 text-operational-muted">{label}</p>
             <p className="font-mono text-2xl tabular-nums">{value}</p>
           </div>
         ))}
@@ -108,9 +108,9 @@ export default async function OverviewPage() {
               <h2 id="attention-heading" className="text-base font-medium">
                 Needs attention
               </h2>
-              <p className="mt-1 text-xs text-operational-muted">Highest risk cases first</p>
+              <p className="mt-1 text-sm text-operational-muted">Highest risk cases first</p>
             </div>
-            <Link href="/app/investigations" className="text-xs text-primary hover:underline">
+            <Link href="/app/investigations" className="text-sm text-primary hover:underline">
               All investigations ↗
             </Link>
           </div>
@@ -127,11 +127,11 @@ export default async function OverviewPage() {
                     className="grid gap-3 px-5 py-3 hover:bg-background focus-visible:ring-2 focus-visible:ring-ring sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                   >
                     <span className="min-w-0">
-                      <span data-instrument className="block truncate text-[10px] text-primary">
+                      <span data-instrument className="block truncate text-xs text-primary">
                         {row.ref} / RISK {row.riskScore}
                       </span>
                       <span className="mt-1 block truncate text-sm font-medium">{row.title}</span>
-                      <span className="mt-1 block line-clamp-1 text-xs text-operational-muted">
+                      <span className="mt-1 block line-clamp-1 text-sm text-operational-muted">
                         {row.integrityEvent.summary}
                       </span>
                     </span>
@@ -144,29 +144,25 @@ export default async function OverviewPage() {
         </section>
         <aside className="grid gap-4 sm:grid-cols-2 xl:grid-cols-1" aria-label="Continue work">
           <div className="border border-border bg-card p-5">
-            <p data-instrument className="text-[10px] text-primary">
-              01 / CONTROL
-            </p>
+            <p className="text-xs font-medium tracking-[.07em] text-primary">01 / CONTROL</p>
             <h2 className="mt-2 text-base font-medium">Review proposed actions</h2>
-            <p className="mt-2 text-xs leading-5 text-operational-muted">
+            <p className="mt-2 text-sm leading-5 text-operational-muted">
               Inspect gate decisions and the actions currently held.
             </p>
             <Link
               href="/app/actions"
-              className="mt-5 inline-flex text-xs text-primary hover:underline"
+              className="mt-5 inline-flex text-sm text-primary hover:underline"
             >
               Open action queue ↗
             </Link>
           </div>
           <div className="border border-border bg-card p-5">
-            <p data-instrument className="text-[10px] text-operational-info">
-              02 / PROOF
-            </p>
+            <p className="text-xs font-medium tracking-[.07em] text-operational-info">02 / PROOF</p>
             <h2 className="mt-2 text-base font-medium">Check the outcome</h2>
-            <p className="mt-2 text-xs leading-5 text-operational-muted">
+            <p className="mt-2 text-sm leading-5 text-operational-muted">
               See recoveries and cases awaiting verification.
             </p>
-            <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-primary">
+            <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-sm text-primary">
               <Link href="/app/recoveries" className="hover:underline">
                 Recoveries ↗
               </Link>
@@ -181,14 +177,14 @@ export default async function OverviewPage() {
         <section aria-labelledby="flow-heading" className="border border-border bg-card p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p data-instrument className="text-[10px] text-operational-muted">
+              <p className="text-xs font-medium tracking-[.07em] text-operational-muted">
                 LAST 24 HOURS
               </p>
               <h2 id="flow-heading" className="mt-2 text-base font-medium">
                 Action flow
               </h2>
             </div>
-            <Link href="/app/actions" className="text-xs text-primary hover:underline">
+            <Link href="/app/actions" className="text-sm text-primary hover:underline">
               View queue ↗
             </Link>
           </div>
@@ -207,7 +203,7 @@ export default async function OverviewPage() {
           </dl>
         </section>
         <section aria-labelledby="signals-heading" className="border border-border bg-card p-5">
-          <p data-instrument className="text-[10px] text-operational-muted">
+          <p className="text-xs font-medium tracking-[.07em] text-operational-muted">
             SOURCE OBSERVATIONS
           </p>
           <h2 id="signals-heading" className="mt-2 text-base font-medium">
@@ -219,11 +215,11 @@ export default async function OverviewPage() {
             <ul className="mt-4 divide-y divide-border">
               {signals.map((signal) => (
                 <li key={signal.id} className="py-3 first:pt-0">
-                  <p data-instrument className="text-[10px] text-primary">
+                  <p data-instrument className="text-xs text-primary">
                     {signal.contract.sourceKey} / {signal.type}
                   </p>
                   <p className="mt-1 line-clamp-1 text-sm">{signal.summary}</p>
-                  <p className="mt-1 text-xs text-operational-muted">
+                  <p className="mt-1 text-sm text-operational-muted">
                     Detected{' '}
                     <time dateTime={signal.detectedAt.toISOString()}>
                       {signal.detectedAt.toISOString().slice(0, 16).replace('T', ' ')} UTC
@@ -247,7 +243,7 @@ export default async function OverviewPage() {
           )}
         </section>
       </div>
-      <p data-instrument className="mt-4 text-[10px] text-operational-muted">
+      <p className="mt-4 text-xs font-medium tracking-[.05em] text-operational-muted">
         DATA AS OF{' '}
         <time dateTime={asOf.toISOString()}>
           {asOf.toISOString().slice(0, 16).replace('T', ' ')} UTC
