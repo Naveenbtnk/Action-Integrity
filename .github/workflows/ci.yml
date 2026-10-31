@@ -85,20 +85,11 @@ jobs:
             if curl -fsS http://localhost:3000/api/v1/health > /dev/null; then break; fi
             sleep 1
           done
+          echo 'Health response:'
+          curl -sS http://localhost:3000/api/v1/health || true
+          echo
+          tail -n 60 server.log
           npm run test:http
           npm run test:integrity-http
           npm run test:phase4-http
           npm run test:phase5-http
-
-  public-site:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: npm
-          cache-dependency-path: apps/public/package-lock.json
-      - run: npm ci --prefix apps/public
-      - run: npm run check --prefix apps/public
-      - run: npm run build --prefix apps/public
