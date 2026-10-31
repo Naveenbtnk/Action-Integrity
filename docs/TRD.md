@@ -121,7 +121,7 @@ performs it; `Verifier` proves it.
 | `OIDC_ROLE_CLAIM`                                                                                       | no       | server     | Default `roles`; values mapped through an allowlist                           |
 | `SESSION_COOKIE_NAME`                                                                                   | no       | server     | Default `aic_session`                                                         |
 | `GEMINI_API_KEY`                                                                                        | yes      | server     | Never exposed to client                                                       |
-| `GEMINI_MODEL`                                                                                          | yes      | server     | e.g. `gemini-2.5-flash`                                                       |
+| `GEMINI_MODEL`                                                                                          | yes      | server     | e.g. `gemini-3.5-flash-lite`; verify access with `npm run gemini:check`      |
 | `AGENT_SERVICE_KEY`                                                                                     | yes      | server     | Automation submits actions with this key                                      |
 | `AGENT_SERVICE_KEY_PREVIOUS`                                                                            | no       | server     | 24 h rotation overlap                                                         |
 | `TARGET_SERVICE_KEY`                                                                                    | yes      | server     | Read by `lib/executor` (outbound) and `lib/target/auth` (inbound check)       |

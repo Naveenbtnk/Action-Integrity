@@ -3,6 +3,7 @@ import 'server-only';
 import { ApiError, GoogleGenAI } from '@google/genai';
 import { z, type ZodType } from 'zod';
 
+import { geminiJsonSchema } from '@/lib/agent/gemini-schema';
 import { env } from '@/lib/env';
 
 export type LlmUsage = { tokensUsed: number | null; modelId: string; retried: boolean };
@@ -35,7 +36,7 @@ export async function generateJson<T>({
           config: {
             systemInstruction: system,
             responseMimeType: 'application/json',
-            responseJsonSchema: z.toJSONSchema(schema),
+            responseJsonSchema: geminiJsonSchema(schema),
             temperature: 0.2,
             maxOutputTokens: 3_000,
             abortSignal: controller.signal,

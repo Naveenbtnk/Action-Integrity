@@ -46,6 +46,7 @@ target writes, or full autonomy.
 | `docs/BACKEND_SCHEMA.md`       | Every table, enum and constraint                                              |
 | `docs/DATABASE.md`             | Migrations, seed, transactions, retention, safety                             |
 | `docs/SUPABASE_SETUP.md`       | Hosted PostgreSQL connection and migration steps for the demo                 |
+| `docs/GEMINI_SETUP.md`         | Safe Gemini investigator configuration and synthetic provider check           |
 | `docs/API.md`                  | Endpoints, envelope, errors, rate limits                                      |
 | `docs/APP_FLOW.md`             | Pages, journeys, states, overlays, edge cases, accessibility                  |
 | `docs/UI_UX_BRIEF.md`          | Frontend specification: IA, routes, tokens, components, motion, accessibility |
@@ -88,6 +89,8 @@ The seed preserves the historical `2026.10.1` placeholder as active and register
 as a draft. An authenticated `ADMIN` must call `POST /api/v1/admin/policy/activate` with its
 version, hash, review ticket (`SEED-BASELINE` locally) and an `Idempotency-Key` before policy
 evaluation becomes available. `/api/v1/health` reports `503` until the active policy verifies.
+The admin can activate the reviewed draft from its Policies detail page. For agent mode, follow
+`docs/GEMINI_SETUP.md` and run `npm run gemini:check` before investigating.
 Production requires OIDC, shared rate limiting, telemetry, and the later readiness gates.
 
 Seeded users (development only):

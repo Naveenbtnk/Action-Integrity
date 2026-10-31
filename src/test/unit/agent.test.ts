@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { Disposition, EvidenceKind } from '@/generated/prisma/enums';
 import { deterministicInvestigation } from '@/lib/agent/fallback';
+import { geminiJsonSchema } from '@/lib/agent/gemini-schema';
 import { buildUserPrompt } from '@/lib/agent/prompt';
 import { agentTools, TOOL_NAMES } from '@/lib/agent/tools';
 import type { EvidenceBundle } from '@/lib/agent/types';
+import { InvestigationReportSchema } from '@/lib/agent/types';
 import { validateReport } from '@/lib/agent/validate';
 
 const bundle: EvidenceBundle = {
@@ -34,6 +36,15 @@ const bundle: EvidenceBundle = {
 };
 
 describe('agent', () => {
+  it('sends Gemini only the compatible schema subset and keeps local validation', () => {
+    const schema = geminiJsonSchema(InvestigationReportSchema);
+    expect(schema).not.toHaveProperty('$schema');
+    expect(schema.properties).toHaveProperty('recommendedDisposition');
+    expect(schema.properties).toHaveProperty('hypotheses');
+    expect(JSON.stringify(schema)).not.toMatch(/default|minLength|maxLength|additionalProperties/);
+    expect(() => InvestigationReportSchema.parse({})).toThrow();
+  });
+
   it('keeps the exact read-only allowlist with one evidence-request exception', () => {
     expect(TOOL_NAMES).toEqual([
       'get_contract',

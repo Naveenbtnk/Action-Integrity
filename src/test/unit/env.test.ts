@@ -47,4 +47,27 @@ describe('environment validation', () => {
       }),
     ).toThrow('AUTH_CREDENTIALS_ENABLED');
   });
+
+  it('requires a Gemini key when production selects agent mode', () => {
+    const production: NodeJS.ProcessEnv = {
+      ...valid,
+      NODE_ENV: 'production',
+      AUTH_URL: 'https://example.com',
+      OIDC_ISSUER: 'https://id.example.com',
+      OIDC_CLIENT_ID: 'client',
+      OIDC_CLIENT_SECRET: 'secret',
+      REDIS_URL: 'redis://localhost:6379',
+      ANCHOR_STORE_ENDPOINT: 'https://objects.example.com',
+      ANCHOR_STORE_BUCKET: 'anchors',
+      ANCHOR_STORE_ACCESS_KEY: 'access',
+      ANCHOR_STORE_SECRET_KEY: 'secret',
+      OTEL_SDK_DISABLED: '0',
+      INVESTIGATION_MODE: 'agent',
+      GEMINI_API_KEY: '',
+    };
+    expect(() => parseEnv(production)).toThrow('GEMINI_API_KEY');
+    expect(
+      parseEnv({ ...production, GEMINI_API_KEY: 'a-private-test-value' }).INVESTIGATION_MODE,
+    ).toBe('agent');
+  });
 });

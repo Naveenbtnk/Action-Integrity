@@ -33,6 +33,7 @@
     "test:chaos": "tsx scripts/not-implemented.ts 'Phase 12 implements chaos tests'",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:all": "npm run typecheck && npm run lint && npm run test:unit",
+    "gemini:check": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/check-gemini.ts",
     "seed": "node --conditions=react-server --env-file-if-exists=.env --import tsx prisma/seed.ts",
     "login:reset-local": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/reset-local-login.ts",
     "seed:reset": "node --conditions=react-server --env-file-if-exists=.env --import tsx scripts/seed-reset.ts",

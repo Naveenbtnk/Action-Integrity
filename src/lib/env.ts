@@ -91,7 +91,7 @@ export function parseEnv(source: NodeJS.ProcessEnv): AppEnv {
 
   const parsed = result.data;
   if (parsed.NODE_ENV === 'production') {
-    const missing = PRODUCTION_REQUIRED.filter((key) => !parsed[key]);
+    const missing: string[] = PRODUCTION_REQUIRED.filter((key) => !parsed[key]);
     const unsafe: string[] = [];
 
     if (parsed.AUTH_CREDENTIALS_ENABLED) unsafe.push('AUTH_CREDENTIALS_ENABLED');
@@ -99,6 +99,11 @@ export function parseEnv(source: NodeJS.ProcessEnv): AppEnv {
     if (parsed.ALLOW_DEMO_RESET) unsafe.push('ALLOW_DEMO_RESET');
     if (parsed.LOG_PRETTY) unsafe.push('LOG_PRETTY');
     if (parsed.OTEL_SDK_DISABLED === '1') unsafe.push('OTEL_SDK_DISABLED');
+    if (
+      parsed.INVESTIGATION_MODE === 'agent' &&
+      (!parsed.GEMINI_API_KEY || /^(replace-me|local-placeholder)$/i.test(parsed.GEMINI_API_KEY))
+    )
+      missing.push('GEMINI_API_KEY');
 
     if (missing.length > 0 || unsafe.length > 0) {
       const fields = [...missing, ...unsafe].sort();
