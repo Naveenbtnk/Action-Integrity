@@ -18,3 +18,5 @@
 5. Complete the restore, security, on-call, and human sign-off evidence required by the release gate. Publish only after the environment-specific go/no-go review.
 
 Do not use the current workspace to process real customer data or claim production approval. The local Supabase connection is persistent storage; it does not supply the remaining security and operational controls.
+
+Render's [Free web service](https://render.com/docs/free#spinning-down-on-idle) spins down after 15 minutes without traffic and can restart at any time. That is suitable for a synthetic demonstration, but it cannot provide this project's continuously running reconciliation, outbox, anchoring, and alerting duties by itself. A D2 deployment needs dependable scheduling and the external services above.
