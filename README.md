@@ -91,7 +91,8 @@ version, hash, review ticket (`SEED-BASELINE` locally) and an `Idempotency-Key` 
 evaluation becomes available. `/api/v1/health` reports `503` until the active policy verifies.
 The admin can activate the reviewed draft from its Policies detail page. For agent mode, follow
 `docs/GEMINI_SETUP.md` and run `npm run gemini:check` before investigating.
-Production requires OIDC, shared rate limiting, telemetry, and the later readiness gates.
+Production requires OIDC, shared rate limiting, telemetry, and the later readiness gates. See
+`docs/DEPLOYMENT_STATUS.md` for the current verified state and blockers.
 
 Seeded users (development only):
 
